@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Pay Status - Palm Fruit Worker</title>
+    <title>Worker Dashboard - Palm Fruit Pay</title>
     <style>
         * {
             margin: 0;
@@ -43,11 +43,13 @@
         }
 
         .header-content {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         h1 {
@@ -57,39 +59,100 @@
             font-weight: 600;
         }
 
-        .user-badge {
-            background: var(--border);
-            padding: 0.5rem 1rem;
-            border-radius: var(--radius);
-            font-size: 0.9rem;
+        .header-actions {
             display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .admin-link {
+        .btn-secondary {
             background: var(--border);
-            border: none;
             color: var(--text);
-            padding: 0.6rem 1rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
         }
 
-        .admin-link:hover {
+        .btn-secondary:hover {
             background: var(--primary);
             color: var(--bg);
         }
 
         /* Main container */
         .container {
-            max-width: 1000px;
+            max-width: 1400px;
             margin: 0 auto;
             padding: 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
         }
 
         /* Sections */
@@ -113,7 +176,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 2rem;
         }
 
         .stat-card {
@@ -143,99 +205,6 @@
             font-size: 0.85rem;
             color: var(--text-muted);
             margin-top: 0.25rem;
-        }
-
-        /* Card */
-        .card {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-
-        .card-title {
-            font-weight: 600;
-            font-size: 1.1rem;
-        }
-
-        .card-meta {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .card-amount {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: var(--primary);
-            font-family: 'Courier New', monospace;
-        }
-
-        /* Badge */
-        .badge {
-            display: inline-block;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
-
-        .badge-success {
-            background: rgba(82, 183, 136, 0.2);
-            color: var(--success);
-        }
-
-        .badge-pending {
-            background: rgba(231, 111, 81, 0.2);
-            color: var(--warning);
-        }
-
-        /* Timeline */
-        .timeline {
-            position: relative;
-            padding: 1rem 0 1rem 2rem;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: var(--border);
-        }
-
-        .timeline-item {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -2.5rem;
-            top: 0.3rem;
-            width: 12px;
-            height: 12px;
-            background: var(--primary);
-            border-radius: 50%;
-            border: 2px solid var(--bg);
-        }
-
-        .timeline-item.paid::before {
-            background: var(--success);
-        }
-
-        .timeline-item.loan::before {
-            background: var(--warning);
         }
 
         /* Table */
@@ -269,38 +238,37 @@
             background: rgba(212, 165, 116, 0.05);
         }
 
-        /* Alert */
-        .alert {
-            background: rgba(212, 165, 116, 0.15);
-            border: 1px solid var(--primary);
-            border-radius: var(--radius);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .alert-title {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        /* Button */
-        .btn {
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: var(--radius);
-            cursor: pointer;
-            font-size: 1rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
+        /* Badge */
+        .badge {
             display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
 
-        .btn:hover {
-            background: #e5b887;
-            transform: translateY(-2px);
+        .badge-success {
+            background: rgba(82, 183, 136, 0.2);
+            color: var(--success);
+        }
+
+        .badge-pending {
+            background: rgba(212, 165, 116, 0.2);
+            color: var(--primary);
+        }
+
+        /* Info box */
+        .info-box {
+            background: rgba(82, 183, 136, 0.1);
+            border-left: 3px solid var(--success);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 2rem;
+            color: var(--text-muted);
+        }
+
+        .info-box strong {
+            color: var(--text);
         }
 
         /* Responsive */
@@ -321,286 +289,395 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
-
-            .stat-value {
-                font-size: 1.5rem;
-            }
-
-            .admin-link {
-                width: 100%;
-                text-align: center;
-            }
         }
 
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
-
-        .empty-state {
+        .loading {
             text-align: center;
             padding: 2rem;
             color: var(--text-muted);
         }
 
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
+        .spinner {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
     <header>
         <div class="header-content">
-            <h1>🌴 My Pay Status</h1>
-            <div>
-                <a href="index.html" class="admin-link">👤 Admin Panel</a>
+            <h1>💼 Your Earnings</h1>
+            <div class="header-actions">
+                <div class="sync-indicator">
+                    <div class="sync-dot"></div>
+                    <span>Live Updates</span>
+                </div>
+                <button class="btn btn-secondary" onclick="goToAdmin()">📊 Admin Panel</button>
             </div>
         </div>
     </header>
 
     <div class="container">
-        <!-- Alert if no data -->
-        <div id="alertSection"></div>
+        <div class="info-box">
+            ℹ️ This is your <strong>personal earnings dashboard</strong>. Data updates in real-time as admin records are entered.
+        </div>
 
-        <!-- Monthly Summary -->
-        <div class="section">
-            <div class="section-title">📊 This Month's Summary</div>
-            <div class="stats-grid" id="summaryStats">
-                <div class="stat-card">
-                    <div class="stat-label">Total Kilograms</div>
-                    <div class="stat-value" id="totalTons">0</div>
-                    <div class="stat-unit">kg collected</div>
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📈 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('earnings')">💰 Earnings History</button>
+            <button class="tab-btn" onclick="switchTab('loans')">🏦 Loans</button>
+            <button class="tab-btn" onclick="switchTab('payments')">✅ Payments Received</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section">
+                <div class="section-title">📊 Your Summary</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Kilograms</div>
+                        <div class="stat-value" id="totalKg">0</div>
+                        <div class="stat-unit">kg</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Earnings</div>
+                        <div class="stat-value" id="totalEarn">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Loans</div>
+                        <div class="stat-value" id="totalLoan">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Amount Paid</div>
+                        <div class="stat-value" id="totalPaid">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Loans Deducted</div>
+                        <div class="stat-value" id="totalDeducted">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Net Amount</div>
+                        <div class="stat-value" id="netAmount">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Total Earnings</div>
-                    <div class="stat-value" id="totalEarnings">0</div>
-                    <div class="stat-unit">RM</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Loans Owed</div>
-                    <div class="stat-value" id="totalLoans">0</div>
-                    <div class="stat-unit">RM</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Expected Net Pay</div>
-                    <div class="stat-value" id="netPay">0</div>
-                    <div class="stat-unit">RM (after loans)</div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📝 Latest 5 Records</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Kilograms</th>
+                                <th>Price/Ton</th>
+                                <th>Rate</th>
+                                <th>Earnings</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentRecords">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    <div class="loading">
+                                        <div class="spinner"></div>
+                                        <p style="margin-top: 1rem;">Loading your data...</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Daily Breakdown -->
-        <div class="section">
-            <div class="section-title">📋 Daily Work Records</div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Kilograms Collected</th>
-                            <th>Price per Ton</th>
-                            <th>Your Rate</th>
-                            <th>Your Earnings</th>
-                        </tr>
-                    </thead>
-                    <tbody id="recordsList">
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Loans Section -->
-        <div class="section">
-            <div class="section-title">💰 Your Loans</div>
-            <div id="loansContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">✨</div>
-                    <p>No loans. Keep up the good work!</p>
+        <!-- Earnings Tab -->
+        <div id="earnings" class="tab-content">
+            <div class="section">
+                <div class="section-title">💰 All Earnings Records</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Kilograms</th>
+                                <th>Price/Ton</th>
+                                <th>Rate</th>
+                                <th>Earnings</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="earningsList">
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Payments Section -->
-        <div class="section">
-            <div class="section-title">💳 Payment History</div>
-            <div id="paymentsContainer">
-                <div class="empty-state">
-                    <div class="empty-state-icon">📭</div>
-                    <p>No payments recorded yet</p>
+        <!-- Loans Tab -->
+        <div id="loans" class="tab-content">
+            <div class="section">
+                <div class="section-title">🏦 Your Loans</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loansList">
+                            <tr>
+                                <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
 
-        <!-- Contact Admin -->
-        <div class="section">
-            <div class="section-title">❓ Questions?</div>
-            <p style="margin-bottom: 1rem; color: var(--text-muted);">
-                If you have questions about your pay, loans, or payments, please contact the admin.
-            </p>
-            <p style="font-size: 0.9rem; color: var(--text-muted);">
-                This is your personal view. Only you can see your data. The admin has access to the full system.
-            </p>
+        <!-- Payments Tab -->
+        <div id="payments" class="tab-content">
+            <div class="section">
+                <div class="section-title">✅ Payments Received</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsList">
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
-    <script>
-        let workerData = {
-            records: [],
-            loans: [],
-            payments: []
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c",
+            authDomain: "palm-fruit-pay.firebaseapp.com",
+            projectId: "palm-fruit-pay",
+            storageBucket: "palm-fruit-pay.firebasestorage.app",
+            messagingSenderId: "639777421131",
+            appId: "1:639777421131:web:a5a84b46e0e287dfb89ace"
         };
 
-        // Load data from localStorage
-        function loadData() {
-            const saved = localStorage.getItem('workerPayData');
-            if (saved) {
-                workerData = JSON.parse(saved);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Get worker email from query parameter or show instructions
+        const urlParams = new URLSearchParams(window.location.search);
+        const workerEmail = urlParams.get('email') || 'husniothman2304@gmail.com';
+
+        let allRecords = [];
+        let allLoans = [];
+        let allPayments = [];
+
+        // Initialize and load data
+        window.addEventListener('load', () => {
+            loadAllData();
+        });
+
+        // Load all data from Firestore
+        function loadAllData() {
+            try {
+                // Load records (listening to all records where the admin owns them)
+                const recordsRef = collection(db, 'records');
+                onSnapshot(recordsRef, (snapshot) => {
+                    allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                }, (error) => {
+                    console.error('Error loading records:', error);
+                    showLoading('Error loading data');
+                });
+
+                // Load loans
+                const loansRef = collection(db, 'loans');
+                onSnapshot(loansRef, (snapshot) => {
+                    allLoans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                }, (error) => {
+                    console.error('Error loading loans:', error);
+                });
+
+                // Load payments
+                const paymentsRef = collection(db, 'payments');
+                onSnapshot(paymentsRef, (snapshot) => {
+                    allPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                }, (error) => {
+                    console.error('Error loading payments:', error);
+                });
+            } catch (error) {
+                console.error('Error setting up listeners:', error);
+                showLoading('Connection error');
             }
-            refreshUI();
         }
 
         // Refresh UI
         function refreshUI() {
             updateSummary();
-            updateRecordsList();
+            updateRecentRecords();
+            updateEarningsList();
             updateLoansList();
             updatePaymentsList();
-            updateAlert();
         }
 
-        // Update summary
+        // Update summary stats
         function updateSummary() {
-            const totalTons = workerData.records.reduce((sum, r) => sum + r.tons, 0);
-            const totalEarnings = workerData.records.reduce((sum, r) => sum + r.earnings, 0);
-            const totalLoans = workerData.loans.reduce((sum, l) => sum + l.amount, 0);
-            const deductedLoans = workerData.loans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
-            const netPay = totalEarnings - deductedLoans;
+            const totalKg = allRecords.reduce((sum, r) => sum + r.tons, 0);
+            const totalEarn = allRecords.reduce((sum, r) => sum + r.earnings, 0);
+            const totalLoan = allLoans.reduce((sum, l) => sum + l.amount, 0);
+            const totalPaid = allPayments.reduce((sum, p) => sum + p.amount, 0);
+            const deducted = allLoans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
+            const netAmount = totalEarn - deducted;
 
-            document.getElementById('totalTons').textContent = totalTons.toFixed(2);
-            document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(2);
-            document.getElementById('totalLoans').textContent = totalLoans.toFixed(2);
-            document.getElementById('netPay').textContent = netPay.toFixed(2);
+            document.getElementById('totalKg').textContent = totalKg.toFixed(0);
+            document.getElementById('totalEarn').textContent = totalEarn.toFixed(2);
+            document.getElementById('totalLoan').textContent = totalLoan.toFixed(2);
+            document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
+            document.getElementById('totalDeducted').textContent = deducted.toFixed(2);
+            document.getElementById('netAmount').textContent = netAmount.toFixed(2);
         }
 
-        // Update records list
-        function updateRecordsList() {
-            const tbody = document.getElementById('recordsList');
-            if (workerData.records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
+        // Update recent records
+        function updateRecentRecords() {
+            const tbody = document.getElementById('recentRecords');
+            const recent = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No records yet</td></tr>';
                 return;
             }
 
-            const sorted = [...workerData.records].sort((a, b) => new Date(b.date) - new Date(a.date));
+            tbody.innerHTML = recent.map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.tons.toFixed(0)} kg</td>
+                    <td>RM ${r.price.toFixed(2)}</td>
+                    <td>RM ${r.rate.toFixed(2)}</td>
+                    <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        // Update earnings list
+        function updateEarningsList() {
+            const tbody = document.getElementById('earningsList');
+            const sorted = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No records yet</td></tr>';
+                return;
+            }
+
             tbody.innerHTML = sorted.map(r => `
                 <tr>
                     <td>${r.date}</td>
                     <td>${r.tons.toFixed(0)} kg</td>
                     <td>RM ${r.price.toFixed(2)}</td>
-                    <td>RM ${r.rate.toFixed(2)} per ton</td>
+                    <td>RM ${r.rate.toFixed(2)}</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                    <td>${r.notes || '-'}</td>
                 </tr>
             `).join('');
         }
 
         // Update loans list
         function updateLoansList() {
-            const container = document.getElementById('loansContainer');
-            
-            if (workerData.loans.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">✨</div>
-                        <p>No loans. Keep up the good work!</p>
-                    </div>
-                `;
+            const tbody = document.getElementById('loansList');
+            const sorted = [...allLoans].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">No loans</td></tr>';
                 return;
             }
 
-            const html = workerData.loans.map(l => `
-                <div class="card">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">💰 Loan</div>
-                            <div class="card-meta">${l.date}</div>
-                        </div>
-                        <span class="badge badge-${l.status === 'deducted' ? 'success' : 'pending'}">
-                            ${l.status === 'deducted' ? '✅ Deducted' : '⏳ Pending'}
-                        </span>
-                    </div>
-                    <div class="card-amount">RM ${l.amount.toFixed(2)}</div>
-                    ${l.reason ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Reason: ${l.reason}</p>` : ''}
-                </div>
+            tbody.innerHTML = sorted.map(l => `
+                <tr>
+                    <td>${l.date}</td>
+                    <td><strong>RM ${l.amount.toFixed(2)}</strong></td>
+                    <td><span class="badge badge-${l.status === 'deducted' ? 'success' : 'pending'}">${l.status}</span></td>
+                    <td>${l.reason || '-'}</td>
+                </tr>
             `).join('');
-
-            container.innerHTML = html;
         }
 
         // Update payments list
         function updatePaymentsList() {
-            const container = document.getElementById('paymentsContainer');
-            
-            if (workerData.payments.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-state-icon">📭</div>
-                        <p>No payments recorded yet</p>
-                    </div>
-                `;
+            const tbody = document.getElementById('paymentsList');
+            const sorted = [...allPayments].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (sorted.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No payments yet</td></tr>';
                 return;
             }
 
-            const sorted = [...workerData.payments].sort((a, b) => new Date(b.date) - new Date(a.date));
-            const html = sorted.map(p => `
-                <div class="card paid">
-                    <div class="card-header">
-                        <div>
-                            <div class="card-title">💳 Payment</div>
-                            <div class="card-meta">${p.date} • ${p.method}</div>
-                        </div>
-                        <span class="badge badge-success">✅ Paid</span>
-                    </div>
-                    <div class="card-amount">RM ${p.amount.toFixed(2)}</div>
-                    ${p.ref ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Ref: ${p.ref}</p>` : ''}
-                    ${p.notes ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.5rem;">Note: ${p.notes}</p>` : ''}
-                </div>
+            tbody.innerHTML = sorted.map(p => `
+                <tr>
+                    <td>${p.date}</td>
+                    <td><strong>RM ${p.amount.toFixed(2)}</strong></td>
+                    <td>${p.method}</td>
+                    <td>${p.ref || '-'}</td>
+                    <td>${p.notes || '-'}</td>
+                </tr>
             `).join('');
-
-            container.innerHTML = html;
         }
 
-        // Update alert
-        function updateAlert() {
-            const container = document.getElementById('alertSection');
-            const totalEarnings = workerData.records.reduce((sum, r) => sum + r.earnings, 0);
-            const deductedLoans = workerData.loans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
-            const pendingLoans = workerData.loans.filter(l => l.status === 'pending').reduce((sum, l) => sum + l.amount, 0);
+        // Tab switching
+        window.switchTab = function(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        };
 
-            if (pendingLoans > 0) {
-                const netPay = totalEarnings - deductedLoans;
-                container.innerHTML = `
-                    <div class="alert">
-                        <div class="alert-title">📌 You have pending loans</div>
-                        <p>Pending loans: <strong>RM ${pendingLoans.toFixed(2)}</strong></p>
-                        <p>These will be deducted from your next payment.</p>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = '';
-            }
+        // Go to admin
+        window.goToAdmin = function() {
+            window.location.href = 'index-firebase.html';
+        };
+
+        // Show loading
+        function showLoading(message) {
+            document.querySelectorAll('tbody').forEach(tbody => {
+                tbody.innerHTML = `<tr><td style="text-align: center; padding: 2rem; color: var(--text-muted);">${message}</td></tr>`;
+            });
         }
-
-        // Initialize
-        loadData();
-
-        // Refresh data every 5 seconds (in case admin updates while worker is viewing)
-        setInterval(loadData, 5000);
     </script>
 </body>
 </html>

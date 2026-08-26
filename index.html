@@ -80,43 +80,51 @@
             gap: 1rem;
         }
 
-        .login-form input {
+        .google-login-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.8rem;
             padding: 0.8rem;
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            color: var(--text);
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-
-        .login-form input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
-        }
-
-        .login-btn {
-            padding: 0.8rem;
-            background: var(--primary);
-            color: var(--bg);
-            border: none;
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
             border-radius: var(--radius);
             cursor: pointer;
             font-size: 1rem;
-            font-weight: 600;
+            font-weight: 500;
             transition: all 0.2s;
         }
 
-        .login-btn:hover {
-            background: #e5b887;
-            transform: translateY(-2px);
+        .google-login-btn:hover {
+            background: #f9f9f9;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
         }
 
         .login-error {
             color: var(--danger);
             font-size: 0.9rem;
             margin-top: 1rem;
+            text-align: center;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
 
         /* Header */
@@ -135,6 +143,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
         }
 
         h1 {
@@ -148,6 +158,7 @@
             display: flex;
             gap: 1rem;
             align-items: center;
+            flex-wrap: wrap;
         }
 
         .user-badge {
@@ -158,6 +169,13 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
         }
 
         .btn-logout {
@@ -192,11 +210,6 @@
         }
 
         .view-toggle button.active {
-            background: var(--primary);
-            color: var(--bg);
-        }
-
-        .view-toggle button:hover {
             background: var(--primary);
             color: var(--bg);
         }
@@ -248,16 +261,6 @@
         .btn-success:hover {
             background: #45a674;
             transform: translateY(-2px);
-        }
-
-        .btn-info {
-            background: var(--border);
-            color: var(--text);
-        }
-
-        .btn-info:hover {
-            background: var(--primary);
-            color: var(--bg);
         }
 
         .btn-danger {
@@ -326,9 +329,6 @@
             font-size: 1.4rem;
             margin-bottom: 1.5rem;
             color: var(--primary);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
         }
 
         /* Forms */
@@ -350,7 +350,6 @@
         input[type="number"],
         input[type="date"],
         input[type="file"],
-        input[type="password"],
         select,
         textarea {
             width: 100%;
@@ -381,10 +380,6 @@
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         }
 
-        .grid-3 {
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
-
         /* Stats */
         .stats-grid {
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -412,79 +407,6 @@
             font-weight: 600;
             color: var(--primary);
             font-family: 'Courier New', monospace;
-        }
-
-        .stat-unit {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 0.25rem;
-        }
-
-        /* Slip upload */
-        .slip-upload {
-            border: 2px dashed var(--border);
-            border-radius: var(--radius);
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            background: rgba(212, 165, 116, 0.05);
-        }
-
-        .slip-upload.dragover {
-            border-color: var(--primary);
-            background: rgba(212, 165, 116, 0.15);
-        }
-
-        .slip-upload input[type="file"] {
-            display: none;
-        }
-
-        .slip-preview {
-            margin-top: 1rem;
-            max-height: 300px;
-            border-radius: var(--radius);
-            overflow: hidden;
-            border: 1px solid var(--border);
-        }
-
-        .slip-preview img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .ai-result {
-            background: rgba(82, 183, 136, 0.1);
-            border-left: 3px solid var(--success);
-            padding: 1rem;
-            border-radius: var(--radius);
-            margin-top: 1rem;
-        }
-
-        .ai-result.error {
-            background: rgba(214, 40, 40, 0.1);
-            border-left-color: var(--danger);
-        }
-
-        .ai-processing {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            color: var(--text-muted);
-        }
-
-        .spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--border);
-            border-top-color: var(--primary);
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
         }
 
         /* Table */
@@ -559,6 +481,89 @@
             color: var(--danger);
         }
 
+        .slip-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(212, 165, 116, 0.05);
+        }
+
+        .slip-upload.dragover {
+            border-color: var(--primary);
+            background: rgba(212, 165, 116, 0.15);
+        }
+
+        .slip-upload input[type="file"] {
+            display: none;
+        }
+
+        .slip-preview {
+            margin-top: 1rem;
+            max-height: 300px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .slip-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .ai-result {
+            background: rgba(82, 183, 136, 0.1);
+            border-left: 3px solid var(--success);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+
+        .ai-result.error {
+            background: rgba(214, 40, 40, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .ai-processing {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+            color: var(--success);
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .container {
@@ -574,8 +579,7 @@
                 gap: 1rem;
             }
 
-            .grid-2,
-            .grid-3 {
+            .grid-2 {
                 grid-template-columns: 1fr;
             }
 
@@ -587,14 +591,6 @@
                 width: 100%;
             }
         }
-
-        @media (prefers-reduced-motion: reduce) {
-            * {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
-            }
-        }
     </style>
 </head>
 <body>
@@ -604,8 +600,15 @@
             <div class="login-title">🌴 Admin Login</div>
             <div class="login-subtitle">Palm Fruit Worker Pay System</div>
             <div class="login-form">
-                <input type="password" id="passwordInput" placeholder="Enter admin password" onkeypress="if(event.key==='Enter') login()">
-                <button class="login-btn" onclick="login()">Login</button>
+                <button class="google-login-btn" onclick="loginWithGoogle()">
+                    <svg class="google-icon" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Sign in with Google
+                </button>
                 <div id="loginError" class="login-error"></div>
             </div>
         </div>
@@ -615,13 +618,19 @@
     <div id="mainApp" style="display: none;">
         <header>
             <div class="header-content">
-                <h1>🌴 Palm Fruit Worker Pay System</h1>
+                <h1>🌴 Palm Fruit Worker Pay</h1>
                 <div class="header-actions">
+                    <div class="sync-indicator" id="syncStatus">
+                        <div class="sync-dot"></div>
+                        <span>Live Sync</span>
+                    </div>
                     <div class="view-toggle">
                         <button class="view-toggle-btn active" onclick="switchView('admin')">Admin</button>
                         <button class="view-toggle-btn" onclick="switchView('worker')">Worker View</button>
                     </div>
-                    <div class="user-badge">👤 Admin</div>
+                    <div class="user-badge" id="userBadge">
+                        👤 Loading...
+                    </div>
                     <button class="btn-logout" onclick="logout()">Logout</button>
                 </div>
             </div>
@@ -631,7 +640,7 @@
             <!-- Export Buttons -->
             <div class="export-buttons">
                 <button class="btn btn-success" onclick="downloadCSV()">📥 Download CSV</button>
-                <button class="btn btn-info" onclick="copyToClipboard()">📋 Copy All Data</button>
+                <button class="btn btn-primary" onclick="copyToClipboard()">📋 Copy All Data</button>
             </div>
 
             <!-- Tabs -->
@@ -646,26 +655,25 @@
             <div id="dashboard" class="tab-content active">
                 <div class="section">
                     <div class="section-title">📈 Monthly Summary</div>
-                    <div class="grid stats-grid" id="summaryStats">
+                    <div class="grid stats-grid">
                         <div class="stat-card">
                             <div class="stat-label">Total KG</div>
                             <div class="stat-value" id="totalTons">0</div>
-                            <div class="stat-unit">kg</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Total Earnings</div>
                             <div class="stat-value" id="totalEarnings">0</div>
-                            <div class="stat-unit">RM</div>
+                            <div>RM</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Total Loans</div>
                             <div class="stat-value" id="totalLoans">0</div>
-                            <div class="stat-unit">RM</div>
+                            <div>RM</div>
                         </div>
                         <div class="stat-card">
                             <div class="stat-label">Net Pay</div>
                             <div class="stat-value" id="netPay">0</div>
-                            <div class="stat-unit">RM</div>
+                            <div>RM</div>
                         </div>
                     </div>
                 </div>
@@ -679,14 +687,13 @@
                                     <th>Date</th>
                                     <th>Kilograms</th>
                                     <th>Price/Ton</th>
-                                    <th>Rate (RM)</th>
+                                    <th>Rate</th>
                                     <th>Earnings</th>
-                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="recentRecords">
                                 <tr>
-                                    <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td>
+                                    <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -703,7 +710,7 @@
                         <label>📷 Upload Slip Photo</label>
                         <div class="slip-upload" id="slipUpload">
                             <p style="margin: 0; color: var(--text-muted);">Click to upload or drag and drop</p>
-                            <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0; color: var(--text-muted);">PNG, JPG, or WEBP (Claude AI will read the kilograms)</p>
+                            <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0; color: var(--text-muted);">PNG, JPG, or WEBP</p>
                             <input type="file" id="slipFile" accept="image/*">
                         </div>
                         <div id="slipPreview"></div>
@@ -716,8 +723,8 @@
                             <input type="date" id="recordDate">
                         </div>
                         <div class="form-group">
-                            <label>⚖️ Kilograms (from slip)</label>
-                            <input type="number" id="recordTons" placeholder="Will auto-fill from AI" step="0.01" min="0">
+                            <label>⚖️ Kilograms</label>
+                            <input type="number" id="recordTons" placeholder="Auto-fill from AI" step="0.01" min="0">
                         </div>
                         <div class="form-group">
                             <label>💵 Price per Ton (RM)</label>
@@ -730,11 +737,11 @@
                     </div>
 
                     <div class="form-group">
-                        <label>📝 Notes (optional)</label>
-                        <textarea id="recordNotes" rows="3" placeholder="Any notes about this record..."></textarea>
+                        <label>📝 Notes</label>
+                        <textarea id="recordNotes" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
 
-                    <button class="btn btn-primary" onclick="addDailyRecord()">✅ Save Daily Record</button>
+                    <button class="btn btn-primary" onclick="addDailyRecord()">✅ Save Record</button>
                 </div>
 
                 <div class="section">
@@ -779,8 +786,8 @@
                     </div>
 
                     <div class="form-group">
-                        <label>📝 Reason (optional)</label>
-                        <textarea id="loanReason" rows="2" placeholder="Why the loan..."></textarea>
+                        <label>📝 Reason</label>
+                        <textarea id="loanReason" rows="2" placeholder="Optional..."></textarea>
                     </div>
 
                     <button class="btn btn-success" onclick="addLoan()">➕ Add Loan</button>
@@ -833,14 +840,14 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>📝 Reference (optional)</label>
-                            <input type="text" id="paymentRef" placeholder="e.g., cheque number, bank ref">
+                            <label>📝 Reference</label>
+                            <input type="text" id="paymentRef" placeholder="Cheque/ref number">
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label>📋 Notes (optional)</label>
-                        <textarea id="paymentNotes" rows="2" placeholder="Any additional notes..."></textarea>
+                        <label>📋 Notes</label>
+                        <textarea id="paymentNotes" rows="2" placeholder="Optional..."></textarea>
                     </div>
 
                     <button class="btn btn-success" onclick="recordPayment()">✅ Record Payment</button>
@@ -872,100 +879,304 @@
         </div>
     </div>
 
-    <script>
-        const API_KEY = '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';
-        const ADMIN_PASSWORD = '5281';
-        
-        let workerData = {
-            records: [],
-            loans: [],
-            payments: []
+    <script type="module">
+        // Firebase Imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c",
+            authDomain: "palm-fruit-pay.firebaseapp.com",
+            projectId: "palm-fruit-pay",
+            storageBucket: "palm-fruit-pay.firebasestorage.app",
+            messagingSenderId: "639777421131",
+            appId: "1:639777421131:web:a5a84b46e0e287dfb89ace"
         };
 
-        let isLoggedIn = false;
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const googleProvider = new GoogleAuthProvider();
 
-        // Login function
-        function login() {
-            const password = document.getElementById('passwordInput').value;
-            const errorDiv = document.getElementById('loginError');
-            
-            if (password === ADMIN_PASSWORD) {
-                isLoggedIn = true;
-                localStorage.setItem('adminLoggedIn', 'true');
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainApp').style.display = 'block';
-                loadData();
-                refreshUI();
-            } else {
-                errorDiv.textContent = '❌ Wrong password. Try again.';
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
-            }
-        }
+        // Global variables
+        let currentUser = null;
+        let currentRecords = [];
+        let currentLoans = [];
+        let currentPayments = [];
 
-        // Logout function
-        function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                isLoggedIn = false;
-                localStorage.removeItem('adminLoggedIn');
-                document.getElementById('mainApp').style.display = 'none';
-                document.getElementById('loginScreen').classList.remove('hidden');
-                document.getElementById('passwordInput').value = '';
-                document.getElementById('passwordInput').focus();
-            }
-        }
-
-        // Check if already logged in
-        window.addEventListener('load', function() {
-            if (localStorage.getItem('adminLoggedIn') === 'true') {
-                isLoggedIn = true;
-                document.getElementById('loginScreen').classList.add('hidden');
-                document.getElementById('mainApp').style.display = 'block';
-                loadData();
-                refreshUI();
-            } else {
-                document.getElementById('passwordInput').focus();
-            }
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    document.getElementById('loginScreen').classList.add('hidden');
+                    document.getElementById('mainApp').style.display = 'block';
+                    updateUserBadge();
+                    loadAllData();
+                    setTodayDate();
+                } else {
+                    document.getElementById('loginScreen').classList.remove('hidden');
+                    document.getElementById('mainApp').style.display = 'none';
+                }
+            });
         });
 
-        // Load data from localStorage
-        function loadData() {
-            const saved = localStorage.getItem('workerPayData');
-            if (saved) {
-                workerData = JSON.parse(saved);
+        // Google Login
+        window.loginWithGoogle = async function() {
+            try {
+                await signInWithPopup(auth, googleProvider);
+            } catch (error) {
+                document.getElementById('loginError').textContent = '❌ Login failed: ' + error.message;
             }
-            setTodayDate();
+        };
+
+        // Logout
+        window.logout = async function() {
+            if (confirm('Logout?')) {
+                await signOut(auth);
+                document.getElementById('mainApp').style.display = 'none';
+                document.getElementById('loginScreen').classList.remove('hidden');
+            }
+        };
+
+        // Update user badge
+        function updateUserBadge() {
+            const badge = document.getElementById('userBadge');
+            if (currentUser.photoURL) {
+                badge.innerHTML = `<img src="${currentUser.photoURL}" class="user-avatar" alt="Avatar"> ${currentUser.displayName}`;
+            } else {
+                badge.innerHTML = `👤 ${currentUser.displayName || currentUser.email}`;
+            }
         }
 
-        // Save data to localStorage
-        function saveData() {
-            localStorage.setItem('workerPayData', JSON.stringify(workerData));
+        // Load all data from Firestore
+        async function loadAllData() {
+            try {
+                // Load records
+                const recordsQuery = query(collection(db, 'records'), where('userId', '==', currentUser.uid));
+                onSnapshot(recordsQuery, (snapshot) => {
+                    currentRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                });
+
+                // Load loans
+                const loansQuery = query(collection(db, 'loans'), where('userId', '==', currentUser.uid));
+                onSnapshot(loansQuery, (snapshot) => {
+                    currentLoans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                });
+
+                // Load payments
+                const paymentsQuery = query(collection(db, 'payments'), where('userId', '==', currentUser.uid));
+                onSnapshot(paymentsQuery, (snapshot) => {
+                    currentPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    refreshUI();
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
         }
 
-        // Set today's date in date inputs
-        function setTodayDate() {
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('recordDate').value = today;
-            document.getElementById('loanDate').value = today;
-            document.getElementById('paymentDate').value = today;
-        }
+        // Add daily record
+        window.addDailyRecord = async function() {
+            const date = document.getElementById('recordDate').value;
+            const tons = parseFloat(document.getElementById('recordTons').value);
+            const price = parseFloat(document.getElementById('recordPrice').value);
+            const rate = parseFloat(document.getElementById('recordRate').value);
+            const notes = document.getElementById('recordNotes').value;
+
+            if (!date || !tons || !price || !rate) {
+                showMessage('Please fill all required fields', 'error');
+                return;
+            }
+
+            try {
+                const earnings = tons * price * rate / 100000;
+                
+                await addDoc(collection(db, 'records'), {
+                    userId: currentUser.uid,
+                    date,
+                    tons,
+                    price,
+                    rate,
+                    earnings,
+                    notes,
+                    timestamp: new Date(),
+                    createdBy: currentUser.email
+                });
+
+                document.getElementById('recordTons').value = '';
+                document.getElementById('recordPrice').value = '';
+                document.getElementById('recordRate').value = '';
+                document.getElementById('recordNotes').value = '';
+                document.getElementById('slipPreview').innerHTML = '';
+                document.getElementById('aiResult').innerHTML = '';
+
+                showMessage('Record added successfully!', 'success');
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        };
+
+        // Add loan
+        window.addLoan = async function() {
+            const date = document.getElementById('loanDate').value;
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            const reason = document.getElementById('loanReason').value;
+
+            if (!date || !amount) {
+                showMessage('Please fill required fields', 'error');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, 'loans'), {
+                    userId: currentUser.uid,
+                    date,
+                    amount,
+                    reason,
+                    status: 'pending',
+                    timestamp: new Date(),
+                    createdBy: currentUser.email
+                });
+
+                document.getElementById('loanAmount').value = '';
+                document.getElementById('loanReason').value = '';
+                showMessage('Loan added!', 'success');
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        };
+
+        // Record payment
+        window.recordPayment = async function() {
+            const date = document.getElementById('paymentDate').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const method = document.getElementById('paymentMethod').value;
+            const ref = document.getElementById('paymentRef').value;
+            const notes = document.getElementById('paymentNotes').value;
+
+            if (!date || !amount) {
+                showMessage('Please fill required fields', 'error');
+                return;
+            }
+
+            try {
+                // Add payment
+                await addDoc(collection(db, 'payments'), {
+                    userId: currentUser.uid,
+                    date,
+                    amount,
+                    method,
+                    ref,
+                    notes,
+                    timestamp: new Date(),
+                    createdBy: currentUser.email
+                });
+
+                // Auto-deduct from loans
+                const pendingLoans = currentLoans.filter(l => l.status === 'pending');
+                let remaining = amount;
+                for (let loan of pendingLoans) {
+                    if (remaining >= loan.amount) {
+                        await updateDoc(doc(db, 'loans', loan.id), { status: 'deducted' });
+                        remaining -= loan.amount;
+                    } else {
+                        break;
+                    }
+                }
+
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('paymentRef').value = '';
+                document.getElementById('paymentNotes').value = '';
+                showMessage('Payment recorded!', 'success');
+            } catch (error) {
+                showMessage('Error: ' + error.message, 'error');
+            }
+        };
+
+        // Delete functions
+        window.deleteRecord = async function(id) {
+            if (confirm('Delete this record?')) {
+                try {
+                    await deleteDoc(doc(db, 'records', id));
+                    showMessage('Record deleted', 'success');
+                } catch (error) {
+                    showMessage('Error: ' + error.message, 'error');
+                }
+            }
+        };
+
+        window.deleteLoan = async function(id) {
+            if (confirm('Delete this loan?')) {
+                try {
+                    await deleteDoc(doc(db, 'loans', id));
+                    showMessage('Loan deleted', 'success');
+                } catch (error) {
+                    showMessage('Error: ' + error.message, 'error');
+                }
+            }
+        };
+
+        window.deletePayment = async function(id) {
+            if (confirm('Delete this payment?')) {
+                try {
+                    await deleteDoc(doc(db, 'payments', id));
+                    showMessage('Payment deleted', 'success');
+                } catch (error) {
+                    showMessage('Error: ' + error.message, 'error');
+                }
+            }
+        };
+
+        // Export to CSV
+        window.downloadCSV = function() {
+            let csv = 'Date,Kilograms,Price/Ton,Rate,Earnings,Notes\n';
+            currentRecords.forEach(r => {
+                csv += `${r.date},${r.tons},${r.price},${r.rate},${r.earnings.toFixed(2)},"${r.notes}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `worker-pay-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+            showMessage('CSV downloaded!', 'success');
+        };
+
+        // Copy to clipboard
+        window.copyToClipboard = function() {
+            const data = {
+                records: currentRecords,
+                loans: currentLoans,
+                payments: currentPayments
+            };
+            navigator.clipboard.writeText(JSON.stringify(data, null, 2)).then(() => {
+                showMessage('Data copied to clipboard!', 'success');
+            });
+        };
 
         // Tab switching
-        function switchTab(tabName) {
+        window.switchTab = function(tabName) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
             event.target.classList.add('active');
-        }
+        };
 
-        // View switching (admin/worker)
-        function switchView(view) {
+        // View switching
+        window.switchView = function(view) {
             if (view === 'worker') {
                 window.location.href = 'worker.html';
             }
-        }
+        };
 
-        // Slip upload handling
+        // Slip upload
         const slipUpload = document.getElementById('slipUpload');
         const slipFile = document.getElementById('slipFile');
 
@@ -994,21 +1205,18 @@
             reader.onload = async (e) => {
                 const base64 = e.target.result.split(',')[1];
                 
-                // Show preview
                 const preview = document.getElementById('slipPreview');
                 preview.innerHTML = `<div class="slip-preview"><img src="${e.target.result}"></div>`;
 
-                // Show processing
                 const aiResult = document.getElementById('aiResult');
-                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> Claude AI is reading the slip...</div>';
+                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> Reading slip...</div>';
 
                 try {
-                    // Call Claude API to read slip
                     const response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'x-api-key': API_KEY
+                            'x-api-key': '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'
                         },
                         body: JSON.stringify({
                             model: 'claude-3-5-sonnet-20241022',
@@ -1026,7 +1234,7 @@
                                     },
                                     {
                                         type: 'text',
-                                        text: 'Look at this palm fruit weighing slip/document. Extract ONLY the total weight in KILOGRAMS (kg) shown. Respond with just the number (e.g., "2500" for 2500 kg). If you cannot find the weight, respond with "ERROR". Do not include units, just the number.'
+                                        text: 'Extract ONLY the total weight in KILOGRAMS (kg) from this slip. Return just the number. If cannot find, respond "ERROR".'
                                     }
                                 ]
                             }]
@@ -1038,180 +1246,23 @@
 
                     if (tonnage !== 'ERROR' && !isNaN(parseFloat(tonnage))) {
                         document.getElementById('recordTons').value = tonnage;
-                        aiResult.innerHTML = `<div class="ai-result">✅ AI detected <strong>${tonnage} kg</strong> from the slip. You can edit if needed.</div>`;
+                        aiResult.innerHTML = `<div class="ai-result">✅ Detected <strong>${tonnage} kg</strong></div>`;
                     } else {
-                        aiResult.innerHTML = `<div class="ai-result error">❌ Could not read kilograms from slip. Please enter manually.</div>`;
+                        aiResult.innerHTML = `<div class="ai-result error">❌ Could not read weight. Enter manually.</div>`;
                     }
                 } catch (err) {
-                    console.error('Error:', err);
-                    aiResult.innerHTML = `<div class="ai-result error">❌ Error processing slip. Please enter kilograms manually.</div>`;
+                    aiResult.innerHTML = `<div class="ai-result error">❌ Error processing. Enter manually.</div>`;
                 }
             };
             reader.readAsDataURL(file);
         }
 
-        // Add daily record
-        function addDailyRecord() {
-            const date = document.getElementById('recordDate').value;
-            const tons = parseFloat(document.getElementById('recordTons').value);
-            const price = parseFloat(document.getElementById('recordPrice').value);
-            const rate = parseFloat(document.getElementById('recordRate').value);
-            const notes = document.getElementById('recordNotes').value;
-
-            if (!date || !tons || !price || !rate) {
-                alert('Please fill in all required fields');
-                return;
-            }
-
-            // Convert kg to tons (1 ton = 1000 kg), then calculate: (kg/1000) × price × rate/100
-            const earnings = tons * price * rate / 100000;
-
-            workerData.records.push({
-                id: Date.now(),
-                date,
-                tons,
-                price,
-                rate,
-                earnings,
-                notes,
-                slipImage: slipFile.files[0] ? slipFile.files[0].name : null
-            });
-
-            saveData();
-            refreshUI();
-            
-            // Clear form
-            document.getElementById('recordTons').value = '';
-            document.getElementById('recordPrice').value = '';
-            document.getElementById('recordRate').value = '';
-            document.getElementById('recordNotes').value = '';
-            document.getElementById('slipPreview').innerHTML = '';
-            document.getElementById('aiResult').innerHTML = '';
-            slipFile.value = '';
-
-            showMessage('Daily record added successfully!', 'success');
-        }
-
-        // Add loan
-        function addLoan() {
-            const date = document.getElementById('loanDate').value;
-            const amount = parseFloat(document.getElementById('loanAmount').value);
-            const reason = document.getElementById('loanReason').value;
-
-            if (!date || !amount) {
-                alert('Please fill in required fields');
-                return;
-            }
-
-            workerData.loans.push({
-                id: Date.now(),
-                date,
-                amount,
-                reason,
-                status: 'pending'
-            });
-
-            saveData();
-            refreshUI();
-            
-            document.getElementById('loanAmount').value = '';
-            document.getElementById('loanReason').value = '';
-            showMessage('Loan added successfully!', 'success');
-        }
-
-        // Record payment
-        function recordPayment() {
-            const date = document.getElementById('paymentDate').value;
-            const amount = parseFloat(document.getElementById('paymentAmount').value);
-            const method = document.getElementById('paymentMethod').value;
-            const ref = document.getElementById('paymentRef').value;
-            const notes = document.getElementById('paymentNotes').value;
-
-            if (!date || !amount) {
-                alert('Please fill in required fields');
-                return;
-            }
-
-            workerData.payments.push({
-                id: Date.now(),
-                date,
-                amount,
-                method,
-                ref,
-                notes
-            });
-
-            // Mark loans as deducted
-            const pendingLoans = workerData.loans.filter(l => l.status === 'pending');
-            let remaining = amount;
-            for (let loan of pendingLoans) {
-                if (remaining >= loan.amount) {
-                    loan.status = 'deducted';
-                    remaining -= loan.amount;
-                } else {
-                    break;
-                }
-            }
-
-            saveData();
-            refreshUI();
-            
-            document.getElementById('paymentAmount').value = '';
-            document.getElementById('paymentRef').value = '';
-            document.getElementById('paymentNotes').value = '';
-            showMessage('Payment recorded successfully!', 'success');
-        }
-
-        // Delete record
-        function deleteRecord(id) {
-            if (confirm('Delete this record?')) {
-                workerData.records = workerData.records.filter(r => r.id !== id);
-                saveData();
-                refreshUI();
-            }
-        }
-
-        // Delete loan
-        function deleteLoan(id) {
-            if (confirm('Delete this loan?')) {
-                workerData.loans = workerData.loans.filter(l => l.id !== id);
-                saveData();
-                refreshUI();
-            }
-        }
-
-        // Delete payment
-        function deletePayment(id) {
-            if (confirm('Delete this payment?')) {
-                workerData.payments = workerData.payments.filter(p => p.id !== id);
-                saveData();
-                refreshUI();
-            }
-        }
-
-        // Download CSV
-        function downloadCSV() {
-            let csv = 'Date,Kilograms,Price/Ton,Rate,Earnings,Notes\n';
-            workerData.records.forEach(r => {
-                csv += `${r.date},${r.tons},${r.price},${r.rate},${r.earnings.toFixed(2)},"${r.notes}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `worker-pay-${new Date().toISOString().split('T')[0]}.csv`;
-            a.click();
-            window.URL.revokeObjectURL(url);
-            showMessage('CSV downloaded!', 'success');
-        }
-
-        // Copy to clipboard
-        function copyToClipboard() {
-            const data = JSON.stringify(workerData, null, 2);
-            navigator.clipboard.writeText(data).then(() => {
-                showMessage('All data copied to clipboard!', 'success');
-            });
+        // Set today's date
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('recordDate').value = today;
+            document.getElementById('loanDate').value = today;
+            document.getElementById('paymentDate').value = today;
         }
 
         // Refresh UI
@@ -1223,12 +1274,12 @@
             updatePaymentsList();
         }
 
-        // Update summary stats
+        // Update summary
         function updateSummary() {
-            const totalTons = workerData.records.reduce((sum, r) => sum + r.tons, 0);
-            const totalEarnings = workerData.records.reduce((sum, r) => sum + r.earnings, 0);
-            const totalLoans = workerData.loans.reduce((sum, l) => sum + l.amount, 0);
-            const deductedLoans = workerData.loans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
+            const totalTons = currentRecords.reduce((sum, r) => sum + r.tons, 0);
+            const totalEarnings = currentRecords.reduce((sum, r) => sum + r.earnings, 0);
+            const totalLoans = currentLoans.reduce((sum, l) => sum + l.amount, 0);
+            const deductedLoans = currentLoans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
             const netPay = totalEarnings - deductedLoans;
 
             document.getElementById('totalTons').textContent = totalTons.toFixed(0);
@@ -1240,12 +1291,12 @@
         // Update records list
         function updateRecordsList() {
             const tbody = document.getElementById('recordsList');
-            if (workerData.records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
+            if (currentRecords.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = workerData.records.map(r => `
+            tbody.innerHTML = currentRecords.map(r => `
                 <tr>
                     <td>${r.date}</td>
                     <td>${r.tons.toFixed(0)} kg</td>
@@ -1253,9 +1304,7 @@
                     <td>RM ${r.rate.toFixed(2)}</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
                     <td>${r.notes || '-'}</td>
-                    <td>
-                        <button class="btn btn-danger btn-small" onclick="deleteRecord(${r.id})">Delete</button>
-                    </td>
+                    <td><button class="btn btn-danger btn-small" onclick="deleteRecord('${r.id}')">Delete</button></td>
                 </tr>
             `).join('');
         }
@@ -1263,10 +1312,10 @@
         // Update recent records
         function updateRecentRecords() {
             const tbody = document.getElementById('recentRecords');
-            const recent = [...workerData.records].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            const recent = [...currentRecords].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
             
             if (recent.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records</td></tr>';
                 return;
             }
 
@@ -1277,9 +1326,6 @@
                     <td>RM ${r.price.toFixed(2)}</td>
                     <td>RM ${r.rate.toFixed(2)}</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
-                    <td>
-                        <button class="btn btn-danger btn-small" onclick="deleteRecord(${r.id})">Delete</button>
-                    </td>
                 </tr>
             `).join('');
         }
@@ -1287,20 +1333,18 @@
         // Update loans list
         function updateLoansList() {
             const tbody = document.getElementById('loansList');
-            if (workerData.loans.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No loans yet</td></tr>';
+            if (currentLoans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No loans</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = workerData.loans.map(l => `
+            tbody.innerHTML = currentLoans.map(l => `
                 <tr>
                     <td>${l.date}</td>
                     <td><strong>RM ${l.amount.toFixed(2)}</strong></td>
                     <td><span class="badge badge-${l.status === 'deducted' ? 'success' : 'pending'}">${l.status}</span></td>
                     <td>${l.reason || '-'}</td>
-                    <td>
-                        <button class="btn btn-danger btn-small" onclick="deleteLoan(${l.id})">Delete</button>
-                    </td>
+                    <td><button class="btn btn-danger btn-small" onclick="deleteLoan('${l.id}')">Delete</button></td>
                 </tr>
             `).join('');
         }
@@ -1308,34 +1352,32 @@
         // Update payments list
         function updatePaymentsList() {
             const tbody = document.getElementById('paymentsList');
-            if (workerData.payments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payments yet</td></tr>';
+            if (currentPayments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payments</td></tr>';
                 return;
             }
 
-            tbody.innerHTML = workerData.payments.map(p => `
+            tbody.innerHTML = currentPayments.map(p => `
                 <tr>
                     <td>${p.date}</td>
                     <td><strong>RM ${p.amount.toFixed(2)}</strong></td>
                     <td>${p.method}</td>
                     <td>${p.ref || '-'}</td>
                     <td>${p.notes || '-'}</td>
-                    <td>
-                        <button class="btn btn-danger btn-small" onclick="deletePayment(${p.id})">Delete</button>
-                    </td>
+                    <td><button class="btn btn-danger btn-small" onclick="deletePayment('${p.id}')">Delete</button></td>
                 </tr>
             `).join('');
         }
 
         // Show message
-        function showMessage(text, type) {
+        window.showMessage = function(text, type) {
             const container = document.querySelector('.container');
             const message = document.createElement('div');
             message.className = `message ${type}`;
-            message.innerHTML = `<span>${type === 'success' ? '✅' : '❌'} ${text}</span>`;
+            message.textContent = text;
             container.insertBefore(message, container.firstChild);
             setTimeout(() => message.remove(), 3000);
-        }
+        };
     </script>
 </body>
 </html>

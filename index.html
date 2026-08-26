@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Palm Fruit Worker Pay - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0a1428;
+            --surface: #161f2e;
+            --border: #2a3a52;
+            --primary: #d4a574;
+            --success: #52b788;
+            --warning: #e76f51;
+            --danger: #d62828;
+            --text: #f5f5f5;
+            --text-muted: #b0b8c1;
+            --radius: 12px;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Header */
+        header {
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: Georgia, serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .user-badge {
+            background: var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .view-toggle button {
+            background: var(--border);
+            border: none;
+            color: var(--text);
+            padding: 0.6rem 1rem;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .view-toggle button.active {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .view-toggle button:hover {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        /* Main container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 2rem;
+            overflow-x: auto;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 1rem 1.5rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-size: 1rem;
+            white-space: nowrap;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-btn:hover {
+            color: var(--text);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: Georgia, serif;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="file"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text);
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        input[type="file"] {
+            padding: 1rem;
+            cursor: pointer;
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(212, 165, 116, 0.1);
+        }
+
+        /* Buttons */
+        button {
+            font-family: inherit;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .btn-primary:hover {
+            background: #e5b887;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.2);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #45a674;
+            transform: translateY(-2px);
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d85a3d;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b01f1f;
+        }
+
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        /* Cards */
+        .card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            transition: all 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Stats */
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--primary);
+            font-family: 'Courier New', monospace;
+        }
+
+        .stat-unit {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Slip processing */
+        .slip-upload {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius);
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: rgba(212, 165, 116, 0.05);
+        }
+
+        .slip-upload.dragover {
+            border-color: var(--primary);
+            background: rgba(212, 165, 116, 0.15);
+        }
+
+        .slip-upload input[type="file"] {
+            display: none;
+        }
+
+        .slip-preview {
+            margin-top: 1rem;
+            max-height: 300px;
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+
+        .slip-preview img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .ai-result {
+            background: rgba(82, 183, 136, 0.1);
+            border-left: 3px solid var(--success);
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-top: 1rem;
+        }
+
+        .ai-result.error {
+            background: rgba(214, 40, 40, 0.1);
+            border-left-color: var(--danger);
+        }
+
+        .ai-processing {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            color: var(--text-muted);
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Table */
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover td {
+            background: rgba(212, 165, 116, 0.05);
+        }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: rgba(82, 183, 136, 0.2);
+            color: var(--success);
+        }
+
+        .badge-warning {
+            background: rgba(231, 111, 81, 0.2);
+            color: var(--warning);
+        }
+
+        .badge-pending {
+            background: rgba(212, 165, 116, 0.2);
+            color: var(--primary);
+        }
+
+        /* Messages */
+        .message {
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .message.success {
+            background: rgba(82, 183, 136, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .message.error {
+            background: rgba(214, 40, 40, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .message.info {
+            background: rgba(212, 165, 116, 0.2);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.4rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .tabs {
+                gap: 0.5rem;
+            }
+
+            .tab-btn {
+                padding: 0.75rem 1rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <h1>🌴 Palm Fruit Pay System</h1>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div class="view-toggle">
+                    <button class="view-toggle-btn active" onclick="switchView('admin')">Admin</button>
+                    <button class="view-toggle-btn" onclick="switchView('worker')">Worker View</button>
+                </div>
+                <div class="user-badge">👤 Admin Panel</div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
+            <button class="tab-btn" onclick="switchTab('daily')">📸 Daily Records</button>
+            <button class="tab-btn" onclick="switchTab('loans')">💰 Loans</button>
+            <button class="tab-btn" onclick="switchTab('payments')">💳 Payments</button>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content active">
+            <div class="section">
+                <div class="section-title">📈 Monthly Summary</div>
+                <div class="grid stats-grid" id="summaryStats">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Tons</div>
+                        <div class="stat-value" id="totalTons">0</div>
+                        <div class="stat-unit">tons</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Earnings</div>
+                        <div class="stat-value" id="totalEarnings">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Loans</div>
+                        <div class="stat-value" id="totalLoans">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Net Pay</div>
+                        <div class="stat-value" id="netPay">0</div>
+                        <div class="stat-unit">RM</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Recent Activity</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Tons</th>
+                                <th>Price/Ton</th>
+                                <th>Rate (RM)</th>
+                                <th>Earnings</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recentRecords">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Records Tab -->
+        <div id="daily" class="tab-content">
+            <div class="section">
+                <div class="section-title">📸 Add Daily Record via Slip</div>
+                
+                <div class="form-group">
+                    <label>📷 Upload Slip Photo</label>
+                    <div class="slip-upload" id="slipUpload">
+                        <p style="margin: 0; color: var(--text-muted);">Click to upload or drag and drop</p>
+                        <p style="font-size: 0.85rem; margin: 0.5rem 0 0 0; color: var(--text-muted);">PNG, JPG, or WEBP (Claude AI will read the tonnage)</p>
+                        <input type="file" id="slipFile" accept="image/*">
+                    </div>
+                    <div id="slipPreview"></div>
+                    <div id="aiResult"></div>
+                </div>
+
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>📅 Date</label>
+                        <input type="date" id="recordDate">
+                    </div>
+                    <div class="form-group">
+                        <label>⚖️ Tons (from slip)</label>
+                        <input type="number" id="recordTons" placeholder="Will auto-fill from AI" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>💵 Price per Ton (RM)</label>
+                        <input type="number" id="recordPrice" placeholder="e.g., 700" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>💼 Pay Rate (RM/ton)</label>
+                        <input type="number" id="recordRate" placeholder="e.g., 70" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Notes (optional)</label>
+                    <textarea id="recordNotes" rows="3" placeholder="Any notes about this record..."></textarea>
+                </div>
+
+                <button class="btn btn-primary" onclick="addDailyRecord()">✅ Save Daily Record</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📊 All Daily Records</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Tons</th>
+                                <th>Price/Ton</th>
+                                <th>Rate</th>
+                                <th>Earnings</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recordsList">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loans Tab -->
+        <div id="loans" class="tab-content">
+            <div class="section">
+                <div class="section-title">💰 Add Loan</div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>📅 Date</label>
+                        <input type="date" id="loanDate">
+                    </div>
+                    <div class="form-group">
+                        <label>💵 Amount (RM)</label>
+                        <input type="number" id="loanAmount" placeholder="e.g., 200" step="0.01" min="0">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Reason (optional)</label>
+                    <textarea id="loanReason" rows="2" placeholder="Why the loan..."></textarea>
+                </div>
+
+                <button class="btn btn-warning" onclick="addLoan()">➕ Add Loan</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📋 Loan History</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Reason</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loansList">
+                            <tr>
+                                <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No loans yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payments Tab -->
+        <div id="payments" class="tab-content">
+            <div class="section">
+                <div class="section-title">💳 Record Payment</div>
+                
+                <div class="grid grid-2">
+                    <div class="form-group">
+                        <label>📅 Payment Date</label>
+                        <input type="date" id="paymentDate">
+                    </div>
+                    <div class="form-group">
+                        <label>💵 Amount Paid (RM)</label>
+                        <input type="number" id="paymentAmount" placeholder="e.g., 1000" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>🏧 Payment Method</label>
+                        <select id="paymentMethod">
+                            <option value="cash">Cash</option>
+                            <option value="bank">Bank Transfer</option>
+                            <option value="cheque">Cheque</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>📝 Reference (optional)</label>
+                        <input type="text" id="paymentRef" placeholder="e.g., cheque number, bank ref">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Notes (optional)</label>
+                    <textarea id="paymentNotes" rows="2" placeholder="Any additional notes..."></textarea>
+                </div>
+
+                <button class="btn btn-success" onclick="recordPayment()">✅ Record Payment</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">📊 Payment History</div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Reference</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsList">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payments yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = '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';
+        
+        // Data structure
+        let workerData = {
+            records: [],
+            loans: [],
+            payments: []
+        };
+
+        // Load data from localStorage
+        function loadData() {
+            const saved = localStorage.getItem('workerPayData');
+            if (saved) {
+                workerData = JSON.parse(saved);
+            }
+            setTodayDate();
+            refreshUI();
+        }
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('workerPayData', JSON.stringify(workerData));
+        }
+
+        // Set today's date in date inputs
+        function setTodayDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('recordDate').value = today;
+            document.getElementById('loanDate').value = today;
+            document.getElementById('paymentDate').value = today;
+        }
+
+        // Tab switching
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // View switching (admin/worker)
+        function switchView(view) {
+            document.querySelectorAll('.view-toggle-btn').forEach(el => el.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (view === 'worker') {
+                window.location.href = 'worker.html';
+            }
+        }
+
+        // Slip upload handling
+        const slipUpload = document.getElementById('slipUpload');
+        const slipFile = document.getElementById('slipFile');
+
+        slipUpload.addEventListener('click', () => slipFile.click());
+        slipUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            slipUpload.classList.add('dragover');
+        });
+        slipUpload.addEventListener('dragleave', () => slipUpload.classList.remove('dragover'));
+        slipUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            slipUpload.classList.remove('dragover');
+            if (e.dataTransfer.files.length) {
+                slipFile.files = e.dataTransfer.files;
+                processSlip();
+            }
+        });
+
+        slipFile.addEventListener('change', processSlip);
+
+        async function processSlip() {
+            const file = slipFile.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result.split(',')[1];
+                
+                // Show preview
+                const preview = document.getElementById('slipPreview');
+                preview.innerHTML = `<div class="slip-preview"><img src="${e.target.result}"></div>`;
+
+                // Show processing
+                const aiResult = document.getElementById('aiResult');
+                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> Claude AI is reading the slip...</div>';
+
+                try {
+                    // Call Claude API to read slip
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': API_KEY
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20241022',
+                            max_tokens: 200,
+                            messages: [{
+                                role: 'user',
+                                content: [
+                                    {
+                                        type: 'image',
+                                        source: {
+                                            type: 'base64',
+                                            media_type: 'image/jpeg',
+                                            data: base64
+                                        }
+                                    },
+                                    {
+                                        type: 'text',
+                                        text: 'Look at this palm fruit weighing slip/document. Extract ONLY the total tonnage/weight shown. Respond with just the number (e.g., "2.5" for 2.5 tons). If you cannot find the tonnage, respond with "ERROR". Do not include units, just the number.'
+                                    }
+                                ]
+                            }]
+                        })
+                    });
+
+                    const data = await response.json();
+                    const tonnage = data.content[0].text.trim();
+
+                    if (tonnage !== 'ERROR' && !isNaN(parseFloat(tonnage))) {
+                        document.getElementById('recordTons').value = tonnage;
+                        aiResult.innerHTML = `<div class="ai-result">✅ AI detected <strong>${tonnage} tons</strong> from the slip. You can edit if needed.</div>`;
+                    } else {
+                        aiResult.innerHTML = `<div class="ai-result error">❌ Could not read tonnage from slip. Please enter manually.</div>`;
+                    }
+                } catch (err) {
+                    console.error('Error:', err);
+                    aiResult.innerHTML = `<div class="ai-result error">❌ Error processing slip. Please enter tonnage manually.</div>`;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Add daily record
+        function addDailyRecord() {
+            const date = document.getElementById('recordDate').value;
+            const tons = parseFloat(document.getElementById('recordTons').value);
+            const price = parseFloat(document.getElementById('recordPrice').value);
+            const rate = parseFloat(document.getElementById('recordRate').value);
+            const notes = document.getElementById('recordNotes').value;
+
+            if (!date || !tons || !price || !rate) {
+                alert('Please fill in all required fields');
+                return;
+            }
+
+            const earnings = tons * price * rate / 100;
+
+            workerData.records.push({
+                id: Date.now(),
+                date,
+                tons,
+                price,
+                rate,
+                earnings,
+                notes,
+                slipImage: slipFile.files[0] ? slipFile.files[0].name : null
+            });
+
+            saveData();
+            refreshUI();
+            
+            // Clear form
+            document.getElementById('recordTons').value = '';
+            document.getElementById('recordPrice').value = '';
+            document.getElementById('recordRate').value = '';
+            document.getElementById('recordNotes').value = '';
+            document.getElementById('slipPreview').innerHTML = '';
+            document.getElementById('aiResult').innerHTML = '';
+            slipFile.value = '';
+
+            showMessage('Daily record added successfully!', 'success');
+        }
+
+        // Add loan
+        function addLoan() {
+            const date = document.getElementById('loanDate').value;
+            const amount = parseFloat(document.getElementById('loanAmount').value);
+            const reason = document.getElementById('loanReason').value;
+
+            if (!date || !amount) {
+                alert('Please fill in required fields');
+                return;
+            }
+
+            workerData.loans.push({
+                id: Date.now(),
+                date,
+                amount,
+                reason,
+                status: 'pending'
+            });
+
+            saveData();
+            refreshUI();
+            
+            document.getElementById('loanAmount').value = '';
+            document.getElementById('loanReason').value = '';
+            showMessage('Loan added successfully!', 'success');
+        }
+
+        // Record payment
+        function recordPayment() {
+            const date = document.getElementById('paymentDate').value;
+            const amount = parseFloat(document.getElementById('paymentAmount').value);
+            const method = document.getElementById('paymentMethod').value;
+            const ref = document.getElementById('paymentRef').value;
+            const notes = document.getElementById('paymentNotes').value;
+
+            if (!date || !amount) {
+                alert('Please fill in required fields');
+                return;
+            }
+
+            workerData.payments.push({
+                id: Date.now(),
+                date,
+                amount,
+                method,
+                ref,
+                notes
+            });
+
+            // Mark loans as deducted
+            const pendingLoans = workerData.loans.filter(l => l.status === 'pending');
+            let remaining = amount;
+            for (let loan of pendingLoans) {
+                if (remaining >= loan.amount) {
+                    loan.status = 'deducted';
+                    remaining -= loan.amount;
+                } else {
+                    break;
+                }
+            }
+
+            saveData();
+            refreshUI();
+            
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('paymentRef').value = '';
+            document.getElementById('paymentNotes').value = '';
+            showMessage('Payment recorded successfully!', 'success');
+        }
+
+        // Delete record
+        function deleteRecord(id) {
+            if (confirm('Delete this record?')) {
+                workerData.records = workerData.records.filter(r => r.id !== id);
+                saveData();
+                refreshUI();
+            }
+        }
+
+        // Delete loan
+        function deleteLoan(id) {
+            if (confirm('Delete this loan?')) {
+                workerData.loans = workerData.loans.filter(l => l.id !== id);
+                saveData();
+                refreshUI();
+            }
+        }
+
+        // Delete payment
+        function deletePayment(id) {
+            if (confirm('Delete this payment?')) {
+                workerData.payments = workerData.payments.filter(p => p.id !== id);
+                saveData();
+                refreshUI();
+            }
+        }
+
+        // Refresh UI
+        function refreshUI() {
+            updateSummary();
+            updateRecordsList();
+            updateRecentRecords();
+            updateLoansList();
+            updatePaymentsList();
+        }
+
+        // Update summary stats
+        function updateSummary() {
+            const totalTons = workerData.records.reduce((sum, r) => sum + r.tons, 0);
+            const totalEarnings = workerData.records.reduce((sum, r) => sum + r.earnings, 0);
+            const totalLoans = workerData.loans.reduce((sum, l) => sum + l.amount, 0);
+            const deductedLoans = workerData.loans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
+            const netPay = totalEarnings - deductedLoans;
+
+            document.getElementById('totalTons').textContent = totalTons.toFixed(2);
+            document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(2);
+            document.getElementById('totalLoans').textContent = totalLoans.toFixed(2);
+            document.getElementById('netPay').textContent = netPay.toFixed(2);
+        }
+
+        // Update records list
+        function updateRecordsList() {
+            const tbody = document.getElementById('recordsList');
+            if (workerData.records.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = workerData.records.map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.tons.toFixed(2)}</td>
+                    <td>RM ${r.price.toFixed(2)}</td>
+                    <td>RM ${r.rate.toFixed(2)}</td>
+                    <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                    <td>${r.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteRecord(${r.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update recent records
+        function updateRecentRecords() {
+            const tbody = document.getElementById('recentRecords');
+            const recent = [...workerData.records].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
+            
+            if (recent.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = recent.map(r => `
+                <tr>
+                    <td>${r.date}</td>
+                    <td>${r.tons.toFixed(2)}</td>
+                    <td>RM ${r.price.toFixed(2)}</td>
+                    <td>RM ${r.rate.toFixed(2)}</td>
+                    <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteRecord(${r.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update loans list
+        function updateLoansList() {
+            const tbody = document.getElementById('loansList');
+            if (workerData.loans.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No loans yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = workerData.loans.map(l => `
+                <tr>
+                    <td>${l.date}</td>
+                    <td><strong>RM ${l.amount.toFixed(2)}</strong></td>
+                    <td><span class="badge badge-${l.status === 'deducted' ? 'success' : 'pending'}">${l.status}</span></td>
+                    <td>${l.reason || '-'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deleteLoan(${l.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Update payments list
+        function updatePaymentsList() {
+            const tbody = document.getElementById('paymentsList');
+            if (workerData.payments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No payments yet</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = workerData.payments.map(p => `
+                <tr>
+                    <td>${p.date}</td>
+                    <td><strong>RM ${p.amount.toFixed(2)}</strong></td>
+                    <td>${p.method}</td>
+                    <td>${p.ref || '-'}</td>
+                    <td>${p.notes || '-'}</td>
+                    <td>
+                        <button class="btn btn-danger btn-small" onclick="deletePayment(${p.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            const container = document.querySelector('.container');
+            const message = document.createElement('div');
+            message.className = `message ${type}`;
+            message.innerHTML = `<span>${type === 'success' ? '✅' : '❌'} ${text}</span>`;
+            container.insertBefore(message, container.firstChild);
+            setTimeout(() => message.remove(), 3000);
+        }
+
+        // Initialize
+        loadData();
+    </script>
+</body>
+</html>

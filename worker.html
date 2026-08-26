@@ -500,6 +500,15 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        // ── OWNER ACCOUNT ────────────────────────────────────────────────
+        // Paste the admin's Firebase UID here.
+        // Find it: Firebase Console -> Authentication -> Users -> copy "User UID"
+        // for the Gmail you use as admin.
+        // Leaving this empty shows records from EVERY account that has ever
+        // written data, which is what caused the doubled totals.
+        const OWNER_UID = '';
+        // ─────────────────────────────────────────────────────────────────
+
         // Get worker email from query parameter or show instructions
         const urlParams = new URLSearchParams(window.location.search);
         const workerEmail = urlParams.get('email') || 'husniothman2304@gmail.com';
@@ -520,7 +529,9 @@
         function loadAllData() {
             try {
                 // Load records (listening to all records where the admin owns them)
-                const recordsRef = collection(db, 'records');
+                const recordsRef = OWNER_UID
+                    ? query(collection(db, 'records'), where('userId', '==', OWNER_UID))
+                    : collection(db, 'records');
                 onSnapshot(recordsRef, (snapshot) => {
                     allRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
@@ -530,7 +541,9 @@
                 });
 
                 // Load loans
-                const loansRef = collection(db, 'loans');
+                const loansRef = OWNER_UID
+                    ? query(collection(db, 'loans'), where('userId', '==', OWNER_UID))
+                    : collection(db, 'loans');
                 onSnapshot(loansRef, (snapshot) => {
                     allLoans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
@@ -540,7 +553,9 @@
                 });
 
                 // Load payments
-                const paymentsRef = collection(db, 'payments');
+                const paymentsRef = OWNER_UID
+                    ? query(collection(db, 'payments'), where('userId', '==', OWNER_UID))
+                    : collection(db, 'payments');
                 onSnapshot(paymentsRef, (snapshot) => {
                     allPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();

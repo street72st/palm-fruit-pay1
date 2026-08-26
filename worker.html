@@ -371,9 +371,9 @@
             <div class="section-title">📊 This Month's Summary</div>
             <div class="stats-grid" id="summaryStats">
                 <div class="stat-card">
-                    <div class="stat-label">Total Tons</div>
+                    <div class="stat-label">Total Kilograms</div>
                     <div class="stat-value" id="totalTons">0</div>
-                    <div class="stat-unit">tons collected</div>
+                    <div class="stat-unit">kg collected</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Total Earnings</div>
@@ -401,7 +401,7 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Tons Collected</th>
+                            <th>Kilograms Collected</th>
                             <th>Price per Ton</th>
                             <th>Your Rate</th>
                             <th>Your Earnings</th>
@@ -493,7 +493,7 @@
         function updateRecordsList() {
             const tbody = document.getElementById('recordsList');
             if (workerData.records.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet. Start collecting palm fruit!</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 2rem;">No records yet</td></tr>';
                 return;
             }
 
@@ -501,7 +501,7 @@
             tbody.innerHTML = sorted.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${r.tons.toFixed(2)} tons</td>
+                    <td>${r.tons.toFixed(0)} kg</td>
                     <td>RM ${r.price.toFixed(2)}</td>
                     <td>RM ${r.rate.toFixed(2)} per ton</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>

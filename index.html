@@ -80,6 +80,34 @@
             gap: 1rem;
         }
 
+        .login-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .login-tab {
+            flex: 1;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.8rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .login-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .login-tab:hover {
+            color: var(--text);
+        }
+
         .google-login-btn {
             display: flex;
             align-items: center;
@@ -94,11 +122,44 @@
             font-size: 1rem;
             font-weight: 500;
             transition: all 0.2s;
+            width: 100%;
         }
 
         .google-login-btn:hover {
             background: #f9f9f9;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-login-btn {
+            width: 100%;
+            padding: 0.8rem;
+            background: var(--primary);
+            color: var(--bg);
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .email-login-btn:hover {
+            background: #e5b887;
+            transform: translateY(-2px);
+        }
+
+        .signup-link {
+            background: none;
+            border: none;
+            color: var(--primary);
+            cursor: pointer;
+            font-size: 0.9rem;
+            text-decoration: underline;
+            transition: color 0.2s;
+        }
+
+        .signup-link:hover {
+            color: #e5b887;
         }
 
         .google-icon {
@@ -592,6 +653,7 @@
             }
         }
     </style>
+    <script src="https://apis.google.com/js/api.js"></script>
 </head>
 <body>
     <!-- Login Screen -->
@@ -599,7 +661,15 @@
         <div class="login-box">
             <div class="login-title">🌴 Admin Login</div>
             <div class="login-subtitle">Palm Fruit Worker Pay System</div>
-            <div class="login-form">
+            
+            <!-- Login Method Toggle -->
+            <div class="login-tabs">
+                <button class="login-tab active" onclick="switchLoginMethod('google')">Google</button>
+                <button class="login-tab" onclick="switchLoginMethod('email')">Email/Password</button>
+            </div>
+
+            <!-- Google Login -->
+            <div id="googleLogin" class="login-form">
                 <button class="google-login-btn" onclick="loginWithGoogle()">
                     <svg class="google-icon" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -609,7 +679,33 @@
                     </svg>
                     Sign in with Google
                 </button>
-                <div id="loginError" class="login-error"></div>
+                <div id="googleError" class="login-error"></div>
+            </div>
+
+            <!-- Email/Password Login -->
+            <div id="emailLogin" class="login-form" style="display: none;">
+                <input type="email" id="emailInput" placeholder="Email address" onkeypress="if(event.key==='Enter') loginWithEmail()">
+                <input type="password" id="passwordInput" placeholder="Password" onkeypress="if(event.key==='Enter') loginWithEmail()">
+                <button class="email-login-btn" onclick="loginWithEmail()">Login</button>
+                <div style="text-align: center; margin-top: 1rem;">
+                    <button class="signup-link" onclick="toggleSignup()">Create Account</button>
+                </div>
+                <div id="emailError" class="login-error"></div>
+            </div>
+
+            <!-- Signup Form -->
+            <div id="signupForm" style="display: none;">
+                <div class="login-form">
+                    <h3 style="color: var(--primary); margin-bottom: 1rem; text-align: center;">Create Account</h3>
+                    <input type="email" id="signupEmail" placeholder="Email address" onkeypress="if(event.key==='Enter') signup()">
+                    <input type="password" id="signupPassword" placeholder="Password (min 6 chars)" onkeypress="if(event.key==='Enter') signup()">
+                    <input type="password" id="signupPasswordConfirm" placeholder="Confirm password" onkeypress="if(event.key==='Enter') signup()">
+                    <button class="email-login-btn" onclick="signup()">Create Account</button>
+                    <div style="text-align: center; margin-top: 1rem;">
+                        <button class="signup-link" onclick="toggleSignup()">Back to Login</button>
+                    </div>
+                    <div id="signupError" class="login-error"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -882,8 +978,16 @@
     <script type="module">
         // Firebase Imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Load Google Drive API
+        gapi.load('client', () => {
+            gapi.client.init({
+                apiKey: 'AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c',
+                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest', 'https://sheets.googleapis.com/$discovery/rest?version=v4'],
+            });
+        });
 
         // Firebase Config
         const firebaseConfig = {
@@ -900,12 +1004,19 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
+        
+        // Add Google Drive scope to auth
+        googleProvider.addScope('https://www.googleapis.com/auth/drive.file');
+        googleProvider.addScope('https://www.googleapis.com/auth/spreadsheets');
 
         // Global variables
         let currentUser = null;
         let currentRecords = [];
         let currentLoans = [];
         let currentPayments = [];
+        let googleAccessToken = null;
+        let googleSheetId = null;
+        let googleDriveFolderId = null;
 
         // Initialize when page loads
         window.addEventListener('load', () => {
@@ -924,12 +1035,116 @@
             });
         });
 
+        // Switch login method
+        window.switchLoginMethod = function(method) {
+            document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
+            document.getElementById('googleLogin').style.display = method === 'google' ? 'block' : 'none';
+            document.getElementById('emailLogin').style.display = method === 'email' ? 'block' : 'none';
+            document.getElementById('signupForm').style.display = 'none';
+            event.target.classList.add('active');
+        };
+
+        // Toggle signup form
+        window.toggleSignup = function() {
+            const emailLogin = document.getElementById('emailLogin');
+            const signupForm = document.getElementById('signupForm');
+            emailLogin.style.display = emailLogin.style.display === 'none' ? 'block' : 'none';
+            signupForm.style.display = signupForm.style.display === 'none' ? 'block' : 'none';
+            document.getElementById('emailError').textContent = '';
+            document.getElementById('signupError').textContent = '';
+        };
+
         // Google Login
         window.loginWithGoogle = async function() {
             try {
-                await signInWithPopup(auth, googleProvider);
+                const errorDiv = document.getElementById('googleError');
+                errorDiv.textContent = '';
+                const result = await signInWithPopup(auth, googleProvider);
+                // Capture Google access token for Drive/Sheets
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                googleAccessToken = credential.accessToken;
+                // Initialize Google Drive and Sheets
+                await initializeGoogleServices();
             } catch (error) {
-                document.getElementById('loginError').textContent = '❌ Login failed: ' + error.message;
+                document.getElementById('googleError').textContent = '❌ ' + error.message;
+            }
+        };
+
+        // Email/Password Login
+        window.loginWithEmail = async function() {
+            try {
+                const errorDiv = document.getElementById('emailError');
+                errorDiv.textContent = '';
+                
+                const email = document.getElementById('emailInput').value.trim();
+                const password = document.getElementById('passwordInput').value;
+
+                if (!email || !password) {
+                    errorDiv.textContent = '❌ Please enter email and password';
+                    return;
+                }
+
+                await signInWithEmailAndPassword(auth, email, password);
+                // Clear form
+                document.getElementById('emailInput').value = '';
+                document.getElementById('passwordInput').value = '';
+            } catch (error) {
+                let message = error.message;
+                if (error.code === 'auth/user-not-found') {
+                    message = 'Email not found. Create an account first.';
+                } else if (error.code === 'auth/wrong-password') {
+                    message = 'Wrong password.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'Invalid email address.';
+                }
+                document.getElementById('emailError').textContent = '❌ ' + message;
+            }
+        };
+
+        // Create Account (Signup)
+        window.signup = async function() {
+            try {
+                const errorDiv = document.getElementById('signupError');
+                errorDiv.textContent = '';
+
+                const email = document.getElementById('signupEmail').value.trim();
+                const password = document.getElementById('signupPassword').value;
+                const confirmPassword = document.getElementById('signupPasswordConfirm').value;
+
+                if (!email || !password || !confirmPassword) {
+                    errorDiv.textContent = '❌ Please fill all fields';
+                    return;
+                }
+
+                if (password !== confirmPassword) {
+                    errorDiv.textContent = '❌ Passwords do not match';
+                    return;
+                }
+
+                if (password.length < 6) {
+                    errorDiv.textContent = '❌ Password must be at least 6 characters';
+                    return;
+                }
+
+                // Create user
+                await createUserWithEmailAndPassword(auth, email, password);
+                
+                // Success - user is now logged in
+                document.getElementById('signupEmail').value = '';
+                document.getElementById('signupPassword').value = '';
+                document.getElementById('signupPasswordConfirm').value = '';
+                
+                // Form will close automatically as user is logged in
+            } catch (error) {
+                let message = error.message;
+                if (error.code === 'auth/email-already-in-use') {
+                    message = 'This email is already registered.';
+                } else if (error.code === 'auth/invalid-email') {
+                    message = 'Invalid email address.';
+                } else if (error.code === 'auth/weak-password') {
+                    message = 'Password is too weak.';
+                }
+                document.getElementById('signupError').textContent = '❌ ' + message;
             }
         };
 
@@ -1008,6 +1223,11 @@
                     createdBy: currentUser.email
                 });
 
+                // Sync to Google Sheets
+                if (googleSheetId && googleAccessToken) {
+                    await syncRecordsToSheet();
+                }
+
                 document.getElementById('recordTons').value = '';
                 document.getElementById('recordPrice').value = '';
                 document.getElementById('recordRate').value = '';
@@ -1015,7 +1235,7 @@
                 document.getElementById('slipPreview').innerHTML = '';
                 document.getElementById('aiResult').innerHTML = '';
 
-                showMessage('Record added successfully!', 'success');
+                showMessage('✅ Record saved! 📊 Synced to Google Sheets', 'success');
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
             }
@@ -1209,9 +1429,14 @@
                 preview.innerHTML = `<div class="slip-preview"><img src="${e.target.result}"></div>`;
 
                 const aiResult = document.getElementById('aiResult');
-                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> Reading slip...</div>';
+                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> 🔍 High sensitivity reading...</div>';
 
                 try {
+                    // Save photo to Google Drive
+                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                    const photoFileName = `slip_${timestamp}.jpg`;
+                    await saveSlipPhotoToDrive(base64, photoFileName);
+
                     const response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
                         headers: {
@@ -1220,7 +1445,7 @@
                         },
                         body: JSON.stringify({
                             model: 'claude-3-5-sonnet-20241022',
-                            max_tokens: 200,
+                            max_tokens: 500,
                             messages: [{
                                 role: 'user',
                                 content: [
@@ -1234,7 +1459,32 @@
                                     },
                                     {
                                         type: 'text',
-                                        text: 'Extract ONLY the total weight in KILOGRAMS (kg) from this slip. Return just the number. If cannot find, respond "ERROR".'
+                                        text: `This is a PALM FRUIT WEIGHING SLIP. Extract the NET WEIGHT with HIGH SENSITIVITY.
+
+CRITICAL INSTRUCTIONS:
+1. Look for "NETT" field - this is the FINAL weight we need
+2. Also check for: NET, TOTAL, WEIGHT, KG, BERAT, JUMLAH, JISIM, BERSIH
+3. The weight is typically a prominent number in the slip
+4. Ignore GROSS weight - we only want NETT/NET weight
+5. Handle formats: 1100, 1,100, 1.100 all mean 1100 kg
+6. Look carefully at tables/forms for the final total
+
+RESPONSE FORMAT:
+- Return ONLY the number (e.g., 1100 or 2500.5)
+- NO units, NO commas, NO periods except decimal
+- If NETT shows 1100 → respond: 1100
+- If weight shows 2500 → respond: 2500
+- If you see 3200.5 → respond: 3200.5
+
+IMPORTANT: If you cannot find weight despite high sensitivity search, respond: ERROR
+
+Example outputs:
+✓ 1100
+✓ 2500
+✓ 3200.5
+✗ 1100kg (no units!)
+✗ 1,100 (no commas!)
+✗ ERROR HERE (only say ERROR if really cannot find)`
                                     }
                                 ]
                             }]
@@ -1242,19 +1492,203 @@
                     });
 
                     const data = await response.json();
-                    const tonnage = data.content[0].text.trim();
+                    const result = data.content[0].text.trim();
 
-                    if (tonnage !== 'ERROR' && !isNaN(parseFloat(tonnage))) {
-                        document.getElementById('recordTons').value = tonnage;
-                        aiResult.innerHTML = `<div class="ai-result">✅ Detected <strong>${tonnage} kg</strong></div>`;
+                    // Clean up result - remove any non-numeric except decimal
+                    const cleanedResult = result.replace(/[^\d.]/g, '').trim();
+                    const weight = parseFloat(cleanedResult);
+
+                    if (result !== 'ERROR' && !isNaN(weight) && weight > 0) {
+                        document.getElementById('recordTons').value = weight;
+                        aiResult.innerHTML = `<div class="ai-result">
+                            ✅ <strong>Weight Detected: ${weight} kg</strong>
+                            <br>📸 Photo saved to Google Drive
+                            <br><small style="color: var(--text-muted);">Verify and adjust if needed.</small>
+                        </div>`;
+                    } else if (result === 'ERROR') {
+                        aiResult.innerHTML = `<div class="ai-result error">
+                            ⚠️ Weight detection failed (unclear slip)
+                            <br><small style="color: var(--text-muted);">Enter NETT weight manually from slip.</small>
+                        </div>`;
                     } else {
-                        aiResult.innerHTML = `<div class="ai-result error">❌ Could not read weight. Enter manually.</div>`;
+                        aiResult.innerHTML = `<div class="ai-result error">
+                            ⚠️ Unclear result: "${result}"
+                            <br><small style="color: var(--text-muted);">Please verify NETT weight and enter manually.</small>
+                        </div>`;
                     }
                 } catch (err) {
-                    aiResult.innerHTML = `<div class="ai-result error">❌ Error processing. Enter manually.</div>`;
+                    console.error('Slip reading error:', err);
+                    aiResult.innerHTML = `<div class="ai-result error">
+                        ❌ Error reading slip (connection issue)
+                        <br><small style="color: var(--text-muted);">Enter weight manually. Check internet.</small>
+                    </div>`;
                 }
             };
             reader.readAsDataURL(file);
+        }
+
+        // Initialize Google Drive and Sheets
+        async function initializeGoogleServices() {
+            try {
+                // Get or create Google Drive folder for photos
+                await setupGoogleDriveFolder();
+                // Get or create Google Sheet
+                await setupGoogleSheet();
+                console.log('✅ Google Drive and Sheets initialized');
+            } catch (error) {
+                console.error('Error initializing Google services:', error);
+            }
+        }
+
+        // Setup Google Drive folder for slip photos
+        async function setupGoogleDriveFolder() {
+            try {
+                const response = await fetch('https://www.googleapis.com/drive/v3/files?q=name=%27Palm+Fruit+Slips%27+and+trashed=false&spaces=drive&fields=files(id,name)', {
+                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+                });
+                const data = await response.json();
+                
+                if (data.files && data.files.length > 0) {
+                    googleDriveFolderId = data.files[0].id;
+                } else {
+                    // Create folder if doesn't exist
+                    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: 'Palm Fruit Slips',
+                            mimeType: 'application/vnd.google-apps.folder'
+                        })
+                    });
+                    const createData = await createResponse.json();
+                    googleDriveFolderId = createData.id;
+                }
+            } catch (error) {
+                console.error('Error setting up Google Drive folder:', error);
+            }
+        }
+
+        // Setup Google Sheet for data syncing
+        async function setupGoogleSheet() {
+            try {
+                // Check if sheet exists
+                const response = await fetch('https://www.googleapis.com/drive/v3/files?q=name=%27Palm+Fruit+Records%27+and+trashed=false&spaces=drive&fields=files(id,name)', {
+                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
+                });
+                const data = await response.json();
+                
+                if (data.files && data.files.length > 0) {
+                    googleSheetId = data.files[0].id;
+                } else {
+                    // Create new sheet
+                    const createResponse = await fetch('https://sheets.googleapis.com/v4/spreadsheets?fields=spreadsheetId', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${googleAccessToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            properties: { title: 'Palm Fruit Records' }
+                        })
+                    });
+                    const createData = await createResponse.json();
+                    googleSheetId = createData.spreadsheetId;
+                    
+                    // Add headers
+                    await addSheetHeaders();
+                }
+                
+                // Sync existing records to sheet
+                await syncRecordsToSheet();
+            } catch (error) {
+                console.error('Error setting up Google Sheet:', error);
+            }
+        }
+
+        // Add headers to new sheet
+        async function addSheetHeaders() {
+            try {
+                const headers = [['Date', 'Weight (kg)', 'Price (RM/ton)', 'Rate (%)', 'Earnings (RM)', 'Notes', 'Timestamp']];
+                
+                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/Sheet1!A1:G1?valueInputOption=RAW`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${googleAccessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ values: headers })
+                });
+            } catch (error) {
+                console.error('Error adding sheet headers:', error);
+            }
+        }
+
+        // Sync records to Google Sheet
+        async function syncRecordsToSheet() {
+            try {
+                if (!googleSheetId || currentRecords.length === 0) return;
+                
+                const values = currentRecords.map(record => [
+                    record.date || '',
+                    record.tons || '',
+                    record.price || '',
+                    record.rate || '',
+                    record.earnings || '',
+                    record.notes || '',
+                    record.timestamp || ''
+                ]);
+                
+                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/Sheet1!A2?valueInputOption=RAW`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${googleAccessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ values })
+                });
+            } catch (error) {
+                console.error('Error syncing to Google Sheet:', error);
+            }
+        }
+
+        // Save slip photo to Google Drive
+        async function saveSlipPhotoToDrive(base64Image, fileName) {
+            try {
+                if (!googleAccessToken || !googleDriveFolderId) return;
+                
+                // Convert base64 to blob
+                const byteCharacters = atob(base64Image);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                
+                const formData = new FormData();
+                formData.append('metadata', new Blob([JSON.stringify({
+                    name: fileName,
+                    parents: [googleDriveFolderId]
+                })], { type: 'application/json' }));
+                formData.append('file', blob);
+                
+                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${googleAccessToken}` },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Photo saved to Drive:', data.name);
+                    return data.id;
+                }
+            } catch (error) {
+                console.error('Error saving photo to Drive:', error);
+            }
         }
 
         // Set today's date

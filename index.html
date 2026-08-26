@@ -566,9 +566,9 @@
                 <div class="section-title">📈 Monthly Summary</div>
                 <div class="grid stats-grid" id="summaryStats">
                     <div class="stat-card">
-                        <div class="stat-label">Total Tons</div>
+                        <div class="stat-label">Total Kilograms</div>
                         <div class="stat-value" id="totalTons">0</div>
-                        <div class="stat-unit">tons</div>
+                        <div class="stat-unit">kg</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Total Earnings</div>
@@ -595,7 +595,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Tons</th>
+                                <th>Kilograms</th>
                                 <th>Price/Ton</th>
                                 <th>Rate (RM)</th>
                                 <th>Earnings</th>
@@ -634,7 +634,7 @@
                         <input type="date" id="recordDate">
                     </div>
                     <div class="form-group">
-                        <label>⚖️ Tons (from slip)</label>
+                        <label>⚖️ Kilograms (from slip)</label>
                         <input type="number" id="recordTons" placeholder="Will auto-fill from AI" step="0.01" min="0">
                     </div>
                     <div class="form-group">
@@ -662,7 +662,7 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Tons</th>
+                                <th>Kilograms</th>
                                 <th>Price/Ton</th>
                                 <th>Rate</th>
                                 <th>Earnings</th>
@@ -901,7 +901,7 @@
                                     },
                                     {
                                         type: 'text',
-                                        text: 'Look at this palm fruit weighing slip/document. Extract ONLY the total tonnage/weight shown. Respond with just the number (e.g., "2.5" for 2.5 tons). If you cannot find the tonnage, respond with "ERROR". Do not include units, just the number.'
+                                        text: 'Look at this palm fruit weighing slip/document. Extract ONLY the total weight in KILOGRAMS (kg) shown. Respond with just the number (e.g., "2500" for 2500 kg). If you cannot find the weight, respond with "ERROR". Do not include units, just the number.'
                                     }
                                 ]
                             }]
@@ -913,7 +913,7 @@
 
                     if (tonnage !== 'ERROR' && !isNaN(parseFloat(tonnage))) {
                         document.getElementById('recordTons').value = tonnage;
-                        aiResult.innerHTML = `<div class="ai-result">✅ AI detected <strong>${tonnage} tons</strong> from the slip. You can edit if needed.</div>`;
+                        aiResult.innerHTML = `<div class="ai-result">✅ AI detected <strong>${tonnage} kg</strong> from the slip. You can edit if needed.</div>`;
                     } else {
                         aiResult.innerHTML = `<div class="ai-result error">❌ Could not read tonnage from slip. Please enter manually.</div>`;
                     }
@@ -938,7 +938,8 @@
                 return;
             }
 
-            const earnings = tons * price * rate / 100;
+            // Convert kg to tons (1 ton = 1000 kg), then calculate: (kg/1000) × price × rate/100
+            const earnings = tons * price * rate / 100000;
 
             workerData.records.push({
                 id: Date.now(),
@@ -1097,7 +1098,7 @@
             tbody.innerHTML = workerData.records.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${r.tons.toFixed(2)}</td>
+                    <td>${r.tons.toFixed(0)} kg</td>
                     <td>RM ${r.price.toFixed(2)}</td>
                     <td>RM ${r.rate.toFixed(2)}</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
@@ -1122,7 +1123,7 @@
             tbody.innerHTML = recent.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${r.tons.toFixed(2)}</td>
+                    <td>${r.tons.toFixed(0)} kg</td>
                     <td>RM ${r.price.toFixed(2)}</td>
                     <td>RM ${r.rate.toFixed(2)}</td>
                     <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>

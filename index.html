@@ -664,8 +664,8 @@
             
             <!-- Login Method Toggle -->
             <div class="login-tabs">
-                <button class="login-tab active" onclick="switchLoginMethod('google')">Google</button>
-                <button class="login-tab" onclick="switchLoginMethod('email')">Email/Password</button>
+                <button class="login-tab active" onclick="switchLoginMethod('google', this)">Google</button>
+                <button class="login-tab" onclick="switchLoginMethod('email', this)">Email/Password</button>
             </div>
 
             <!-- Google Login -->
@@ -741,10 +741,10 @@
 
             <!-- Tabs -->
             <div class="tabs">
-                <button class="tab-btn active" onclick="switchTab('dashboard')">📊 Dashboard</button>
-                <button class="tab-btn" onclick="switchTab('daily')">📸 Daily Records</button>
-                <button class="tab-btn" onclick="switchTab('loans')">💰 Loans</button>
-                <button class="tab-btn" onclick="switchTab('payments')">💳 Payments</button>
+                <button class="tab-btn active" onclick="switchTab('dashboard', this)">📊 Dashboard</button>
+                <button class="tab-btn" onclick="switchTab('daily', this)">📸 Daily Records</button>
+                <button class="tab-btn" onclick="switchTab('loans', this)">💰 Loans</button>
+                <button class="tab-btn" onclick="switchTab('payments', this)">💳 Payments</button>
             </div>
 
             <!-- Dashboard Tab -->
@@ -981,13 +981,29 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, where, getDocs, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Load Google Drive API
-        gapi.load('client', () => {
-            gapi.client.init({
-                apiKey: 'AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c',
-                discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest', 'https://sheets.googleapis.com/$discovery/rest?version=v4'],
-            });
-        });
+        // Load Google Drive API — guarded. If apis.google.com is blocked or slow,
+        // this must NOT throw, or the whole module dies and login breaks.
+        try {
+            if (typeof gapi !== 'undefined' && gapi.load) {
+                gapi.load('client', () => {
+                    try {
+                        gapi.client.init({
+                            apiKey: 'AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c',
+                            discoveryDocs: [
+                                'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest',
+                                'https://sheets.googleapis.com/$discovery/rest?version=v4'
+                            ],
+                        });
+                    } catch (e) {
+                        console.warn('Google API init skipped:', e);
+                    }
+                });
+            } else {
+                console.warn('Google API script not available — Drive/Sheets sync disabled.');
+            }
+        } catch (e) {
+            console.warn('Google API load skipped:', e);
+        }
 
         // Firebase Config
         const firebaseConfig = {
@@ -1036,12 +1052,12 @@
         });
 
         // Switch login method
-        window.switchLoginMethod = function(method) {
+        window.switchLoginMethod = function(method, el) {
             document.querySelectorAll('.login-tab').forEach(tab => tab.classList.remove('active'));
             document.getElementById('googleLogin').style.display = method === 'google' ? 'block' : 'none';
             document.getElementById('emailLogin').style.display = method === 'email' ? 'block' : 'none';
             document.getElementById('signupForm').style.display = 'none';
-            event.target.classList.add('active');
+            if (el) el.classList.add('active');
         };
 
         // Toggle signup form
@@ -1175,6 +1191,9 @@
                 onSnapshot(recordsQuery, (snapshot) => {
                     currentRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
+                }, (error) => {
+                    console.error('Error loading records:', error);
+                    showMessage('Cannot read records: ' + error.message, 'error');
                 });
 
                 // Load loans
@@ -1182,6 +1201,8 @@
                 onSnapshot(loansQuery, (snapshot) => {
                     currentLoans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
+                }, (error) => {
+                    console.error('Error loading loans:', error);
                 });
 
                 // Load payments
@@ -1189,6 +1210,8 @@
                 onSnapshot(paymentsQuery, (snapshot) => {
                     currentPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
+                }, (error) => {
+                    console.error('Error loading payments:', error);
                 });
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -1223,9 +1246,10 @@
                     createdBy: currentUser.email
                 });
 
-                // Sync to Google Sheets
+                // Sync to Google Sheets (never blocks saving — failure is non-fatal)
                 if (googleSheetId && googleAccessToken) {
-                    await syncRecordsToSheet();
+                    appendRowToSheet([date, tons, price, rate, earnings.toFixed(2), notes, new Date().toISOString()])
+                        .catch(e => console.warn('Sheet sync skipped:', e));
                 }
 
                 document.getElementById('recordTons').value = '';
@@ -1235,7 +1259,7 @@
                 document.getElementById('slipPreview').innerHTML = '';
                 document.getElementById('aiResult').innerHTML = '';
 
-                showMessage('✅ Record saved! 📊 Synced to Google Sheets', 'success');
+                showMessage(googleSheetId ? '✅ Record saved and synced to Google Sheets' : '✅ Record saved', 'success');
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
             }
@@ -1382,11 +1406,11 @@
         };
 
         // Tab switching
-        window.switchTab = function(tabName) {
+        window.switchTab = function(tabName, el) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            if (el) el.classList.add('active');
         };
 
         // View switching
@@ -1652,6 +1676,21 @@ Example outputs:
             } catch (error) {
                 console.error('Error syncing to Google Sheet:', error);
             }
+        }
+
+        // Append a single row to the sheet (correct API for adding, avoids overwrite races)
+        async function appendRowToSheet(row) {
+            if (!googleSheetId || !googleAccessToken) return;
+            const res = await fetch(
+                `https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/Sheet1!A1:G1:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${googleAccessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ values: [row] })
+            });
+            if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
         }
 
         // Save slip photo to Google Drive

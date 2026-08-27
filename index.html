@@ -1452,241 +1452,143 @@
 
         slipFile.addEventListener('change', processSlip);
 
+        // ── SLIP SCANNING ────────────────────────────────────────────────
+        const ANTHROPIC_KEY = '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';
+
+        function slipStatus(html, cls) {
+            document.getElementById('aiResult').innerHTML =
+                `<div class="ai-result${cls ? ' ' + cls : ''}">${html}</div>`;
+        }
+
         async function processSlip() {
             const file = slipFile.files[0];
             if (!file) return;
 
+            if (file.size > 8 * 1024 * 1024) {
+                slipStatus('⚠️ Photo is larger than 8 MB. Take a smaller photo or reduce quality.', 'error');
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = async (e) => {
-                const base64 = e.target.result.split(',')[1];
-                
-                const preview = document.getElementById('slipPreview');
-                preview.innerHTML = `<div class="slip-preview"><img src="${e.target.result}"></div>`;
+                const dataUrl = e.target.result;
+                const base64 = dataUrl.split(',')[1];
+                const mediaType = (dataUrl.match(/^data:(image\/[a-z]+);/) || [])[1] || 'image/jpeg';
 
-                const aiResult = document.getElementById('aiResult');
-                aiResult.innerHTML = '<div class="ai-processing"><div class="spinner"></div> 🔍 High sensitivity reading...</div>';
+                document.getElementById('slipPreview').innerHTML =
+                    `<div class="slip-preview"><img src="${dataUrl}"></div>`;
 
+                slipStatus('<div class="ai-processing"><div class="spinner"></div> Reading slip…</div>');
+
+                // 1. Upload to Drive (independent of the AI step)
+                const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+                const driveResult = await saveSlipPhotoToDrive(base64, `slip_${timestamp}.jpg`, mediaType);
+
+                // 2. Read the slip
+                let parsed = null, failure = null;
                 try {
-                    // Save photo to Google Drive
-                    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-                    const photoFileName = `slip_${timestamp}.jpg`;
-                    await saveSlipPhotoToDrive(base64, photoFileName);
-
                     const response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
                         headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': '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'
+                            'content-type': 'application/json',
+                            'x-api-key': ANTHROPIC_KEY,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
                         },
                         body: JSON.stringify({
-                            model: 'claude-3-5-sonnet-20241022',
-                            max_tokens: 500,
+                            model: 'claude-sonnet-4-6',
+                            max_tokens: 400,
                             messages: [{
                                 role: 'user',
                                 content: [
-                                    {
-                                        type: 'image',
-                                        source: {
-                                            type: 'base64',
-                                            media_type: 'image/jpeg',
-                                            data: base64
-                                        }
-                                    },
-                                    {
-                                        type: 'text',
-                                        text: `This is a PALM FRUIT WEIGHING SLIP. Extract the NET WEIGHT with HIGH SENSITIVITY.
+                                    { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+                                    { type: 'text', text: `This image is a palm oil mill weighbridge ticket (Weighbridge Advice Ticket).
 
-CRITICAL INSTRUCTIONS:
-1. Look for "NETT" field - this is the FINAL weight we need
-2. Also check for: NET, TOTAL, WEIGHT, KG, BERAT, JUMLAH, JISIM, BERSIH
-3. The weight is typically a prominent number in the slip
-4. Ignore GROSS weight - we only want NETT/NET weight
-5. Handle formats: 1100, 1,100, 1.100 all mean 1100 kg
-6. Look carefully at tables/forms for the final total
+Read these fields exactly as printed:
+- nett   : the value labelled "Nett" (kg). This is the figure that matters.
+- gross  : the value labelled "Gross" (kg)
+- tare   : the value labelled "Tare" (kg)
+- date   : the ticket date, converted to YYYY-MM-DD
+- ticket : the ticket number
 
-RESPONSE FORMAT:
-- Return ONLY the number (e.g., 1100 or 2500.5)
-- NO units, NO commas, NO periods except decimal
-- If NETT shows 1100 → respond: 1100
-- If weight shows 2500 → respond: 2500
-- If you see 3200.5 → respond: 3200.5
+Rules:
+- Weights are in kilograms. Strip any commas or spaces: "1,100 Kg" is 1100.
+- Do not calculate or infer nett. Report the printed Nett value only.
+- If a field is missing or you cannot read it with confidence, use null for that field.
+- Do not guess. A null is far better than a wrong number, because this figure determines a worker's pay.
 
-IMPORTANT: If you cannot find weight despite high sensitivity search, respond: ERROR
-
-Example outputs:
-✓ 1100
-✓ 2500
-✓ 3200.5
-✗ 1100kg (no units!)
-✗ 1,100 (no commas!)
-✗ ERROR HERE (only say ERROR if really cannot find)`
-                                    }
+Reply with raw JSON only. No markdown, no code fences, no commentary:
+{"nett":1100,"gross":3180,"tare":2080,"date":"2026-08-26","ticket":"997138"}` }
                                 ]
                             }]
                         })
                     });
 
-                    const data = await response.json();
-                    const result = data.content[0].text.trim();
-
-                    // Clean up result - remove any non-numeric except decimal
-                    const cleanedResult = result.replace(/[^\d.]/g, '').trim();
-                    const weight = parseFloat(cleanedResult);
-
-                    if (result !== 'ERROR' && !isNaN(weight) && weight > 0) {
-                        document.getElementById('recordTons').value = weight;
-                        aiResult.innerHTML = `<div class="ai-result">
-                            ✅ <strong>Weight Detected: ${weight} kg</strong>
-                            <br>📸 Photo saved to Google Drive
-                            <br><small style="color: var(--text-muted);">Verify and adjust if needed.</small>
-                        </div>`;
-                    } else if (result === 'ERROR') {
-                        aiResult.innerHTML = `<div class="ai-result error">
-                            ⚠️ Weight detection failed (unclear slip)
-                            <br><small style="color: var(--text-muted);">Enter NETT weight manually from slip.</small>
-                        </div>`;
-                    } else {
-                        aiResult.innerHTML = `<div class="ai-result error">
-                            ⚠️ Unclear result: "${result}"
-                            <br><small style="color: var(--text-muted);">Please verify NETT weight and enter manually.</small>
-                        </div>`;
+                    if (!response.ok) {
+                        const body = await response.text();
+                        throw new Error(`API returned ${response.status}. ${body.slice(0, 200)}`);
                     }
+
+                    const data = await response.json();
+                    let raw = (data.content || [])
+                        .filter(b => b.type === 'text')
+                        .map(b => b.text)
+                        .join('')
+                        .trim()
+                        .replace(/^```(?:json)?/i, '')
+                        .replace(/```$/, '')
+                        .trim();
+
+                    const brace = raw.indexOf('{');
+                    if (brace > 0) raw = raw.slice(brace);
+                    parsed = JSON.parse(raw);
                 } catch (err) {
-                    console.error('Slip reading error:', err);
-                    aiResult.innerHTML = `<div class="ai-result error">
-                        ❌ Error reading slip (connection issue)
-                        <br><small style="color: var(--text-muted);">Enter weight manually. Check internet.</small>
-                    </div>`;
+                    console.error('Slip reading failed:', err);
+                    failure = err.message;
                 }
+
+                // 3. Report
+                const driveLine = driveResult.ok
+                    ? '<br><span style="color:var(--success)">📸 Photo saved to Google Drive</span>'
+                    : `<br><span style="color:var(--text-muted)">📸 Not saved to Drive — ${driveResult.reason}</span>`;
+
+                if (failure) {
+                    slipStatus(`❌ Could not read the slip.<br>
+                        <small style="color:var(--text-muted)">${failure}</small><br>
+                        <small style="color:var(--text-muted)">Enter the Nett weight manually below.</small>${driveLine}`, 'error');
+                    return;
+                }
+
+                const nett = parseFloat(parsed && parsed.nett);
+                if (isNaN(nett) || nett <= 0) {
+                    slipStatus(`⚠️ Nett weight not readable on this photo.<br>
+                        <small style="color:var(--text-muted)">Enter it manually from the slip.</small>${driveLine}`, 'error');
+                    return;
+                }
+
+                document.getElementById('recordTons').value = nett;
+
+                // Cross-check nett against gross minus tare
+                const gross = parseFloat(parsed.gross), tare = parseFloat(parsed.tare);
+                let check = '';
+                if (!isNaN(gross) && !isNaN(tare)) {
+                    const diff = Math.abs((gross - tare) - nett);
+                    check = diff <= 1
+                        ? `<br><small style="color:var(--success)">✓ Checks out: ${gross} − ${tare} = ${gross - tare} kg</small>`
+                        : `<br><small style="color:var(--warning)">⚠️ Nett says ${nett} but gross − tare = ${gross - tare}. Check the slip before saving.</small>`;
+                }
+
+                // Use the ticket date if it looks valid
+                let dateLine = '';
+                if (parsed.date && /^\d{4}-\d{2}-\d{2}$/.test(parsed.date)) {
+                    document.getElementById('recordDate').value = parsed.date;
+                    dateLine = `<br><small style="color:var(--text-muted)">Date set to ${parsed.date}${parsed.ticket ? ' · ticket ' + parsed.ticket : ''}</small>`;
+                }
+
+                slipStatus(`✅ <strong>Nett: ${nett} kg</strong>${check}${dateLine}${driveLine}
+                    <br><small style="color:var(--text-muted)">Always compare against the slip before saving.</small>`);
             };
             reader.readAsDataURL(file);
-        }
-
-        // Initialize Google Drive and Sheets
-        async function initializeGoogleServices() {
-            try {
-                // Get or create Google Drive folder for photos
-                await setupGoogleDriveFolder();
-                // Get or create Google Sheet
-                await setupGoogleSheet();
-                console.log('✅ Google Drive and Sheets initialized');
-            } catch (error) {
-                console.error('Error initializing Google services:', error);
-            }
-        }
-
-        // Setup Google Drive folder for slip photos
-        async function setupGoogleDriveFolder() {
-            try {
-                const response = await fetch('https://www.googleapis.com/drive/v3/files?q=name=%27Palm+Fruit+Slips%27+and+trashed=false&spaces=drive&fields=files(id,name)', {
-                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
-                });
-                const data = await response.json();
-                
-                if (data.files && data.files.length > 0) {
-                    googleDriveFolderId = data.files[0].id;
-                } else {
-                    // Create folder if doesn't exist
-                    const createResponse = await fetch('https://www.googleapis.com/drive/v3/files?fields=id', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${googleAccessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            name: 'Palm Fruit Slips',
-                            mimeType: 'application/vnd.google-apps.folder'
-                        })
-                    });
-                    const createData = await createResponse.json();
-                    googleDriveFolderId = createData.id;
-                }
-            } catch (error) {
-                console.error('Error setting up Google Drive folder:', error);
-            }
-        }
-
-        // Setup Google Sheet for data syncing
-        async function setupGoogleSheet() {
-            try {
-                // Check if sheet exists
-                const response = await fetch('https://www.googleapis.com/drive/v3/files?q=name=%27Palm+Fruit+Records%27+and+trashed=false&spaces=drive&fields=files(id,name)', {
-                    headers: { 'Authorization': `Bearer ${googleAccessToken}` }
-                });
-                const data = await response.json();
-                
-                if (data.files && data.files.length > 0) {
-                    googleSheetId = data.files[0].id;
-                } else {
-                    // Create new sheet
-                    const createResponse = await fetch('https://sheets.googleapis.com/v4/spreadsheets?fields=spreadsheetId', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${googleAccessToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            properties: { title: 'Palm Fruit Records' }
-                        })
-                    });
-                    const createData = await createResponse.json();
-                    googleSheetId = createData.spreadsheetId;
-                    
-                    // Add headers
-                    await addSheetHeaders();
-                }
-                
-                // Sync existing records to sheet
-                await syncRecordsToSheet();
-            } catch (error) {
-                console.error('Error setting up Google Sheet:', error);
-            }
-        }
-
-        // Add headers to new sheet
-        async function addSheetHeaders() {
-            try {
-                const headers = [['Date', 'Weight (kg)', 'Price (RM/ton)', 'Rate (%)', 'Earnings (RM)', 'Notes', 'Timestamp']];
-                
-                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/Sheet1!A1:G1?valueInputOption=RAW`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${googleAccessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ values: headers })
-                });
-            } catch (error) {
-                console.error('Error adding sheet headers:', error);
-            }
-        }
-
-        // Sync records to Google Sheet
-        async function syncRecordsToSheet() {
-            try {
-                if (!googleSheetId || currentRecords.length === 0) return;
-                
-                const values = currentRecords.map(record => [
-                    record.date || '',
-                    record.tons || '',
-                    record.price || '',
-                    record.rate || '',
-                    record.earnings || '',
-                    record.notes || '',
-                    record.timestamp || ''
-                ]);
-                
-                await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${googleSheetId}/values/Sheet1!A2?valueInputOption=RAW`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `Bearer ${googleAccessToken}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ values })
-                });
-            } catch (error) {
-                console.error('Error syncing to Google Sheet:', error);
-            }
         }
 
         // Append a single row to the sheet (correct API for adding, avoids overwrite races)
@@ -1704,40 +1606,49 @@ Example outputs:
             if (!res.ok) throw new Error('Sheets append failed: ' + res.status);
         }
 
-        // Save slip photo to Google Drive
-        async function saveSlipPhotoToDrive(base64Image, fileName) {
+        // Save slip photo to Google Drive.
+        // Returns {ok, reason} so the UI can tell the truth about what happened
+        // instead of silently pretending the upload worked.
+        async function saveSlipPhotoToDrive(base64Image, fileName, mediaType) {
+            if (!googleAccessToken) {
+                return { ok: false, reason: 'sign in with Google to enable Drive upload' };
+            }
+            if (!googleDriveFolderId) {
+                return { ok: false, reason: 'Drive folder not ready (enable the Drive API in Google Cloud)' };
+            }
+
             try {
-                if (!googleAccessToken || !googleDriveFolderId) return;
-                
-                // Convert base64 to blob
-                const byteCharacters = atob(base64Image);
-                const byteNumbers = new Array(byteCharacters.length);
-                for (let i = 0; i < byteCharacters.length; i++) {
-                    byteNumbers[i] = byteCharacters.charCodeAt(i);
-                }
-                const byteArray = new Uint8Array(byteNumbers);
-                const blob = new Blob([byteArray], { type: 'image/jpeg' });
-                
-                const formData = new FormData();
-                formData.append('metadata', new Blob([JSON.stringify({
+                const byteChars = atob(base64Image);
+                const bytes = new Uint8Array(byteChars.length);
+                for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+                const blob = new Blob([bytes], { type: mediaType || 'image/jpeg' });
+
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify({
                     name: fileName,
                     parents: [googleDriveFolderId]
                 })], { type: 'application/json' }));
-                formData.append('file', blob);
-                
-                const response = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+                form.append('file', blob);
+
+                const res = await fetch(
+                    'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name', {
                     method: 'POST',
                     headers: { 'Authorization': `Bearer ${googleAccessToken}` },
-                    body: formData
+                    body: form
                 });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('✅ Photo saved to Drive:', data.name);
-                    return data.id;
+
+                if (!res.ok) {
+                    const body = await res.text();
+                    console.warn('Drive upload failed:', res.status, body);
+                    return { ok: false, reason: `Drive returned ${res.status}` };
                 }
+
+                const data = await res.json();
+                console.log('Photo saved to Drive:', data.name);
+                return { ok: true, id: data.id };
             } catch (error) {
-                console.error('Error saving photo to Drive:', error);
+                console.warn('Drive upload error:', error);
+                return { ok: false, reason: error.message };
             }
         }
 

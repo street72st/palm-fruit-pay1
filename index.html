@@ -837,7 +837,7 @@
                         <textarea id="recordNotes" rows="3" placeholder="Optional notes..."></textarea>
                     </div>
 
-                    <button class="btn btn-primary" onclick="addDailyRecord()">✅ Save Record</button>
+                    <button class="btn btn-primary" id="saveRecordBtn" onclick="addDailyRecord()">✅ Save Record</button>
                 </div>
 
                 <div class="section">
@@ -1219,7 +1219,11 @@
         }
 
         // Add daily record
+        let savingRecord = false;
         window.addDailyRecord = async function() {
+            // Guard against double-submission (double click, Enter twice, slow network)
+            if (savingRecord) return;
+
             const date = document.getElementById('recordDate').value;
             const tons = parseFloat(document.getElementById('recordTons').value);
             const price = parseFloat(document.getElementById('recordPrice').value);
@@ -1231,9 +1235,13 @@
                 return;
             }
 
+            const btn = document.getElementById('saveRecordBtn');
+            savingRecord = true;
+            if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
+
             try {
                 const earnings = tons * price * rate / 100000;
-                
+
                 await addDoc(collection(db, 'records'), {
                     userId: currentUser.uid,
                     date,
@@ -1262,6 +1270,9 @@
                 showMessage(googleSheetId ? '✅ Record saved and synced to Google Sheets' : '✅ Record saved', 'success');
             } catch (error) {
                 showMessage('Error: ' + error.message, 'error');
+            } finally {
+                savingRecord = false;
+                if (btn) { btn.disabled = false; btn.textContent = '✅ Save Record'; }
             }
         };
 

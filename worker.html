@@ -334,7 +334,7 @@
         <!-- Tabs -->
         <div class="tabs">
             <button class="tab-btn active" onclick="switchTab('dashboard', this)">📈 Dashboard</button>
-            <button class="tab-btn" onclick="switchTab('earnings', this)">💰 Earnings History</button>
+            <button class="tab-btn" onclick="switchTab('earnings', this)">💰 Salary History</button>
             <button class="tab-btn" onclick="switchTab('loans', this)">🏦 Loans</button>
             <button class="tab-btn" onclick="switchTab('payments', this)">✅ Payments Received</button>
         </div>
@@ -350,9 +350,14 @@
                         <div class="stat-unit">kg</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Total Earnings</div>
+                        <div class="stat-label">Total Salary Earned</div>
                         <div class="stat-value" id="totalEarn">0</div>
                         <div class="stat-unit">RM</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Pay Rate</div>
+                        <div class="stat-value" id="currentRate">0</div>
+                        <div class="stat-unit">RM per ton</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-label">Total Loans</div>
@@ -370,7 +375,7 @@
                         <div class="stat-unit">RM</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-label">Net Amount</div>
+                        <div class="stat-label">Still Owed to You</div>
                         <div class="stat-value" id="netAmount">0</div>
                         <div class="stat-unit">RM</div>
                     </div>
@@ -385,9 +390,10 @@
                             <tr>
                                 <th>Date</th>
                                 <th>Kilograms</th>
-                                <th>Price/Ton</th>
-                                <th>Rate</th>
-                                <th>Earnings</th>
+                                <th>Tons</th>
+                                <th>Pay rate</th>
+                                <th>Your pay</th>
+                                <th>Notes</th>
                             </tr>
                         </thead>
                         <tbody id="recentRecords">
@@ -408,16 +414,16 @@
         <!-- Earnings Tab -->
         <div id="earnings" class="tab-content">
             <div class="section">
-                <div class="section-title">💰 All Earnings Records</div>
+                <div class="section-title">💰 Your Salary Records</div>
                 <div class="table-wrapper">
                     <table>
                         <thead>
                             <tr>
                                 <th>Date</th>
                                 <th>Kilograms</th>
-                                <th>Price/Ton</th>
-                                <th>Rate</th>
-                                <th>Earnings</th>
+                                <th>Tons</th>
+                                <th>Pay rate</th>
+                                <th>Your pay</th>
                                 <th>Notes</th>
                             </tr>
                         </thead>
@@ -515,6 +521,9 @@
 
         // Safe number coercion — a missing/typo'd field must not blank the page
         const num = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+        // Pay = tonnage x pay rate. Recomputed here so any old record saved
+        // with a wrong earnings figure displays the correct amount.
+        const payFor = r => (num(r.tons) / 1000) * num(r.rate);
 
         let allRecords = [];
         let allLoans = [];
@@ -582,7 +591,7 @@
         function updateSummary() {
             const n = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
             const totalKg = allRecords.reduce((sum, r) => sum + n(r.tons), 0);
-            const totalEarn = allRecords.reduce((sum, r) => sum + n(r.earnings), 0);
+            const totalEarn = allRecords.reduce((sum, r) => sum + payFor(r), 0);
             const totalLoan = allLoans.reduce((sum, l) => sum + n(l.amount), 0);
             const totalPaid = allPayments.reduce((sum, p) => sum + n(p.amount), 0);
             const deducted = allLoans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + n(l.amount), 0);
@@ -590,6 +599,11 @@
 
             document.getElementById('totalKg').textContent = totalKg.toFixed(0);
             document.getElementById('totalEarn').textContent = totalEarn.toFixed(2);
+
+            const sorted = [...allRecords].sort((a, b) => String(b.date).localeCompare(String(a.date)));
+            const latestRate = sorted.length ? num(sorted[0].rate) : 0;
+            const rateEl = document.getElementById('currentRate');
+            if (rateEl) rateEl.textContent = latestRate.toFixed(2);
             document.getElementById('totalLoan').textContent = totalLoan.toFixed(2);
             document.getElementById('totalPaid').textContent = totalPaid.toFixed(2);
             document.getElementById('totalDeducted').textContent = deducted.toFixed(2);
@@ -602,7 +616,7 @@
             const recent = [...allRecords].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 5);
 
             if (recent.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">No records yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">No records yet</td></tr>';
                 return;
             }
 
@@ -610,9 +624,10 @@
                 <tr>
                     <td>${r.date}</td>
                     <td>${num(r.tons).toFixed(0)} kg</td>
-                    <td>RM ${num(r.price).toFixed(2)}</td>
-                    <td>RM ${num(r.rate).toFixed(2)}</td>
-                    <td><strong>RM ${num(r.earnings).toFixed(2)}</strong></td>
+                    <td>${(num(r.tons) / 1000).toFixed(3)}</td>
+                    <td>RM ${num(r.rate).toFixed(2)}/ton</td>
+                    <td><strong>RM ${payFor(r).toFixed(2)}</strong></td>
+                    <td>${r.notes || '-'}</td>
                 </tr>
             `).join('');
         }
@@ -631,9 +646,9 @@
                 <tr>
                     <td>${r.date}</td>
                     <td>${num(r.tons).toFixed(0)} kg</td>
-                    <td>RM ${num(r.price).toFixed(2)}</td>
-                    <td>RM ${num(r.rate).toFixed(2)}</td>
-                    <td><strong>RM ${num(r.earnings).toFixed(2)}</strong></td>
+                    <td>${(num(r.tons) / 1000).toFixed(3)}</td>
+                    <td>RM ${num(r.rate).toFixed(2)}/ton</td>
+                    <td><strong>RM ${payFor(r).toFixed(2)}</strong></td>
                     <td>${r.notes || '-'}</td>
                 </tr>
             `).join('');

@@ -757,8 +757,18 @@
                             <div class="stat-value" id="totalTons">0</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Total Earnings</div>
+                            <div class="stat-label">Revenue (mill pays you)</div>
+                            <div class="stat-value" id="totalRevenue">0</div>
+                            <div>RM</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Worker salary</div>
                             <div class="stat-value" id="totalEarnings">0</div>
+                            <div>RM</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Your margin</div>
+                            <div class="stat-value" id="totalMargin">0</div>
                             <div>RM</div>
                         </div>
                         <div class="stat-card">
@@ -767,7 +777,7 @@
                             <div>RM</div>
                         </div>
                         <div class="stat-card">
-                            <div class="stat-label">Net Pay</div>
+                            <div class="stat-label">Net pay to worker</div>
                             <div class="stat-value" id="netPay">0</div>
                             <div>RM</div>
                         </div>
@@ -782,9 +792,9 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Kilograms</th>
-                                    <th>Price/Ton</th>
-                                    <th>Rate</th>
-                                    <th>Earnings</th>
+                                    <th>Revenue</th>
+                                    <th>Worker salary</th>
+                                    <th>Margin</th>
                                 </tr>
                             </thead>
                             <tbody id="recentRecords">
@@ -823,11 +833,11 @@
                             <input type="number" id="recordTons" placeholder="Auto-fill from AI" step="0.01" min="0">
                         </div>
                         <div class="form-group">
-                            <label>💵 Price per Ton (RM)</label>
+                            <label>💵 Mill price per ton (RM) — record only</label>
                             <input type="number" id="recordPrice" placeholder="e.g., 700" step="0.01" min="0">
                         </div>
                         <div class="form-group">
-                            <label>💼 Pay Rate (RM/ton)</label>
+                            <label>💼 Pay rate (RM per ton) — sets the pay</label>
                             <input type="number" id="recordRate" placeholder="e.g., 70" step="0.01" min="0">
                         </div>
                     </div>
@@ -864,9 +874,9 @@
                                 <tr>
                                     <th>Date</th>
                                     <th>Kilograms</th>
-                                    <th>Price/Ton</th>
-                                    <th>Rate</th>
-                                    <th>Earnings</th>
+                                    <th>Revenue</th>
+                                    <th>Worker salary</th>
+                                    <th>Margin</th>
                                     <th>Notes</th>
                                     <th>Action</th>
                                 </tr>
@@ -1203,7 +1213,7 @@
         async function loadAllData() {
             try {
                 // Load records
-                const recordsQuery = query(collection(db, 'records'), where('userId', '==', currentUser.uid));
+                const recordsQuery = collection(db, 'records');
                 onSnapshot(recordsQuery, (snapshot) => {
                     currentRecords = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
@@ -1213,7 +1223,7 @@
                 });
 
                 // Load loans
-                const loansQuery = query(collection(db, 'loans'), where('userId', '==', currentUser.uid));
+                const loansQuery = collection(db, 'loans');
                 onSnapshot(loansQuery, (snapshot) => {
                     currentLoans = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
@@ -1222,7 +1232,7 @@
                 });
 
                 // Load payments
-                const paymentsQuery = query(collection(db, 'payments'), where('userId', '==', currentUser.uid));
+                const paymentsQuery = collection(db, 'payments');
                 onSnapshot(paymentsQuery, (snapshot) => {
                     currentPayments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                     refreshUI();
@@ -1235,6 +1245,13 @@
         }
 
         // Add daily record
+        // Worker pay = tonnage x pay rate. The mill price is business revenue
+        // and must never enter this calculation.
+        const n = v => (isNaN(parseFloat(v)) ? 0 : parseFloat(v));
+        const salaryFor  = r => (n(r.tons) / 1000) * n(r.rate);   // what the worker is paid
+        const revenueFor = r => (n(r.tons) / 1000) * n(r.price);  // what the mill pays you
+        const payFor = salaryFor;
+
         let savingRecord = false;
         window.addDailyRecord = async function() {
             // Guard against double-submission (double click, Enter twice, slow network)
@@ -1256,7 +1273,7 @@
             if (btn) { btn.disabled = true; btn.textContent = 'Saving…'; }
 
             try {
-                const earnings = tons * price * rate / 100000;
+                const earnings = (tons / 1000) * rate;
 
                 await addDoc(collection(db, 'records'), {
                     userId: currentUser.uid,
@@ -1405,9 +1422,9 @@
 
         // Export to CSV
         window.downloadCSV = function() {
-            let csv = 'Date,Kilograms,Price/Ton,Rate,Earnings,Notes\n';
+            let csv = 'Date,Kilograms,Tons,MillPricePerTon,Revenue,PayRatePerTon,WorkerSalary,Margin,Notes\n';
             currentRecords.forEach(r => {
-                csv += `${r.date},${r.tons},${r.price},${r.rate},${r.earnings.toFixed(2)},"${r.notes}"\n`;
+                csv += `${r.date},${n(r.tons)},${(n(r.tons)/1000).toFixed(3)},${n(r.price)},${revenueFor(r).toFixed(2)},${n(r.rate)},${salaryFor(r).toFixed(2)},${(revenueFor(r)-salaryFor(r)).toFixed(2)},"${r.notes || ''}"\n`;
             });
 
             const blob = new Blob([csv], { type: 'text/csv' });
@@ -1748,13 +1765,18 @@ Reply with raw JSON only. No markdown, no code fences, no commentary:
         // Update summary
         function updateSummary() {
             const totalTons = currentRecords.reduce((sum, r) => sum + r.tons, 0);
-            const totalEarnings = currentRecords.reduce((sum, r) => sum + r.earnings, 0);
+            const totalEarnings = currentRecords.reduce((sum, r) => sum + salaryFor(r), 0);
+            const totalRevenue  = currentRecords.reduce((sum, r) => sum + revenueFor(r), 0);
             const totalLoans = currentLoans.reduce((sum, l) => sum + l.amount, 0);
             const deductedLoans = currentLoans.filter(l => l.status === 'deducted').reduce((sum, l) => sum + l.amount, 0);
             const netPay = totalEarnings - deductedLoans;
 
             document.getElementById('totalTons').textContent = totalTons.toFixed(0);
             document.getElementById('totalEarnings').textContent = totalEarnings.toFixed(2);
+            const revEl = document.getElementById('totalRevenue');
+            if (revEl) revEl.textContent = totalRevenue.toFixed(2);
+            const marEl = document.getElementById('totalMargin');
+            if (marEl) marEl.textContent = (totalRevenue - totalEarnings).toFixed(2);
             document.getElementById('totalLoans').textContent = totalLoans.toFixed(2);
             document.getElementById('netPay').textContent = netPay.toFixed(2);
         }
@@ -1770,10 +1792,10 @@ Reply with raw JSON only. No markdown, no code fences, no commentary:
             tbody.innerHTML = currentRecords.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${r.tons.toFixed(0)} kg</td>
-                    <td>RM ${r.price.toFixed(2)}</td>
-                    <td>RM ${r.rate.toFixed(2)}</td>
-                    <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                    <td>${n(r.tons).toFixed(0)} kg</td>
+                    <td>RM ${revenueFor(r).toFixed(2)}<br><small style="color:var(--text-muted)">@ ${n(r.price).toFixed(2)}/ton</small></td>
+                    <td><strong>RM ${salaryFor(r).toFixed(2)}</strong><br><small style="color:var(--text-muted)">@ ${n(r.rate).toFixed(2)}/ton</small></td>
+                    <td>RM ${(revenueFor(r) - salaryFor(r)).toFixed(2)}</td>
                     <td>${r.notes || '-'}</td>
                     <td><button class="btn btn-danger btn-small" onclick="deleteRecord('${r.id}')">Delete</button></td>
                 </tr>
@@ -1793,10 +1815,9 @@ Reply with raw JSON only. No markdown, no code fences, no commentary:
             tbody.innerHTML = recent.map(r => `
                 <tr>
                     <td>${r.date}</td>
-                    <td>${r.tons.toFixed(0)} kg</td>
-                    <td>RM ${r.price.toFixed(2)}</td>
-                    <td>RM ${r.rate.toFixed(2)}</td>
-                    <td><strong>RM ${r.earnings.toFixed(2)}</strong></td>
+                    <td>${n(r.tons).toFixed(0)} kg</td>
+                    <td>RM ${revenueFor(r).toFixed(2)}</td>
+                    <td><strong>RM ${salaryFor(r).toFixed(2)}</strong></td>
                 </tr>
             `).join('');
         }

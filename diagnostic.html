@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Data Diagnostic — Palm Fruit Pay</title>
+<style>
+  :root{
+    --bg:#0a1428; --surface:#161f2e; --border:#243044;
+    --primary:#d4a574; --text:#e8eaed; --muted:#8b97a8;
+    --danger:#d62828; --warn:#e76f51; --ok:#52b788;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;padding:1.25rem;line-height:1.5}
+  h1{color:var(--primary);font-size:1.4rem;margin-bottom:.25rem}
+  .sub{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.25rem;margin-bottom:1.25rem}
+  h2{color:var(--primary);font-size:1.05rem;margin-bottom:.75rem}
+  button{font:inherit;border:none;border-radius:8px;padding:.6rem 1rem;cursor:pointer;font-weight:600}
+  .btn-primary{background:var(--primary);color:#0a1428}
+  .btn-danger{background:var(--danger);color:#fff;padding:.35rem .7rem;font-size:.8rem}
+  .btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse;font-size:.85rem;margin-top:.5rem}
+  th,td{text-align:left;padding:.5rem .4rem;border-bottom:1px solid var(--border);vertical-align:middle}
+  th{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+  .mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.75rem}
+  .tag{display:inline-block;padding:.15rem .45rem;border-radius:5px;font-size:.7rem;font-weight:700}
+  .tag-dup{background:var(--warn);color:#0a1428}
+  .scroll{overflow-x:auto}
+  .note{background:rgba(231,111,81,.12);border-left:3px solid var(--warn);padding:.75rem 1rem;border-radius:6px;margin-top:.75rem;font-size:.85rem}
+  .ok{color:var(--ok)} .muted{color:var(--muted)}
+  #status{margin-bottom:1rem;font-size:.9rem}
+</style>
+</head>
+<body>
+
+<h1>🔍 Data Diagnostic</h1>
+<div class="sub">Shows every document in your database, exactly as stored. Use this to find and remove duplicates.</div>
+
+<div id="status" class="muted">Loading…</div>
+
+<div id="loginCard" class="card" style="display:none">
+  <h2>Sign in required</h2>
+  <p class="muted" style="margin-bottom:1rem;font-size:.9rem">Deleting documents requires authentication. Sign in with the Gmail you use as admin.</p>
+  <button class="btn-primary" id="loginBtn">Sign in with Google</button>
+  <div id="loginErr" style="color:var(--danger);margin-top:.75rem;font-size:.85rem"></div>
+</div>
+
+<div id="main" style="display:none">
+  <div class="card">
+    <h2>Summary by account</h2>
+    <div id="byAccount"></div>
+    <div id="verdict"></div>
+  </div>
+
+  <div class="card">
+    <h2>records <span class="muted" id="cRecords"></span></h2>
+    <div class="scroll"><table id="tRecords"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>loans <span class="muted" id="cLoans"></span></h2>
+    <div class="scroll"><table id="tLoans"></table></div>
+  </div>
+
+  <div class="card">
+    <h2>payments <span class="muted" id="cPayments"></span></h2>
+    <div class="scroll"><table id="tPayments"></table></div>
+  </div>
+
+  <button class="btn-ghost" id="reloadBtn">Reload data</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc }
+  from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAUazQABluN-7dcV5hz6N3aOgNv3HNDa9c",
+  authDomain: "palm-fruit-pay.firebaseapp.com",
+  projectId: "palm-fruit-pay",
+  storageBucket: "palm-fruit-pay.firebasestorage.app",
+  messagingSenderId: "639777421131",
+  appId: "1:639777421131:web:a5a84b46e0e287dfb89ace"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+const $ = id => document.getElementById(id);
+const esc = v => String(v === undefined || v === null ? '' : v).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const num = v => isNaN(parseFloat(v)) ? 0 : parseFloat(v);
+
+let me = null;
+
+onAuthStateChanged(auth, user => {
+  me = user;
+  if (user) {
+    $('loginCard').style.display = 'none';
+    $('main').style.display = 'block';
+    $('status').innerHTML = `Signed in as <strong>${esc(user.email)}</strong> · UID <span class="mono">${esc(user.uid)}</span>`;
+    loadAll();
+  } else {
+    $('loginCard').style.display = 'block';
+    $('main').style.display = 'none';
+    $('status').textContent = 'Not signed in.';
+  }
+});
+
+$('loginBtn').onclick = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { $('loginErr').textContent = e.message; }
+};
+$('reloadBtn').onclick = () => loadAll();
+
+async function fetchAll(name) {
+  const snap = await getDocs(collection(db, name));
+  return snap.docs.map(d => ({ _id: d.id, ...d.data() }));
+}
+
+// A duplicate = same userId + date + tons + price. Same slip entered twice.
+function signature(r) {
+  return [r.userId, r.date, num(r.tons), num(r.price), num(r.rate)].join('|');
+}
+
+async function loadAll() {
+  $('status').innerHTML += ' · <span class="muted">loading…</span>';
+  try {
+    const [records, loans, payments] = await Promise.all([
+      fetchAll('records'), fetchAll('loans'), fetchAll('payments')
+    ]);
+
+    renderAccounts(records);
+    renderRecords(records);
+    renderSimple('tLoans', 'cLoans', loans, 'loans',
+      ['date','amount','reason','status']);
+    renderSimple('tPayments','cPayments', payments, 'payments',
+      ['date','amount','method','ref']);
+
+    $('status').innerHTML =
+      `Signed in as <strong>${esc(me.email)}</strong> · UID <span class="mono">${esc(me.uid)}</span>`;
+  } catch (e) {
+    $('status').innerHTML = `<span style="color:var(--danger)">Failed to load: ${esc(e.message)}</span>`;
+  }
+}
+
+function renderAccounts(records) {
+  const groups = {};
+  for (const r of records) {
+    const k = r.userId || '(no userId)';
+    groups[k] = groups[k] || { count:0, kg:0, earn:0, email:r.createdBy || '(unknown)' };
+    groups[k].count++;
+    groups[k].kg   += num(r.tons);
+    groups[k].earn += num(r.earnings);
+  }
+
+  const keys = Object.keys(groups);
+  let html = '<div class="scroll"><table><tr><th>Account</th><th>UID</th><th>Docs</th><th>Total kg</th><th>Total RM</th></tr>';
+  for (const k of keys) {
+    const g = groups[k];
+    const isMe = k === me.uid;
+    html += `<tr>
+      <td>${esc(g.email)} ${isMe ? '<span class="tag" style="background:var(--ok);color:#0a1428">you</span>' : ''}</td>
+      <td class="mono">${esc(k)}</td>
+      <td>${g.count}</td>
+      <td>${g.kg.toFixed(0)}</td>
+      <td>${g.earn.toFixed(2)}</td>
+    </tr>`;
+  }
+  html += '</table></div>';
+  $('byAccount').innerHTML = html;
+
+  // Verdict
+  const sigs = {};
+  records.forEach(r => { const s = signature(r); sigs[s] = (sigs[s]||0)+1; });
+  const dupGroups = Object.values(sigs).filter(c => c > 1).length;
+
+  let v = '';
+  if (keys.length > 1) {
+    v += `<div class="note"><strong>Cause found: ${keys.length} different accounts have written records.</strong><br>
+      The admin panel only shows the account you are signed in as, but the worker page sums all of them.
+      Delete the rows belonging to the account you are not keeping, then set <span class="mono">OWNER_UID</span>
+      in worker.html to the UID you keep.</div>`;
+  }
+  if (dupGroups > 0) {
+    v += `<div class="note"><strong>Cause found: ${dupGroups} duplicate entr${dupGroups>1?'ies':'y'}.</strong><br>
+      The same slip (same account, date, weight and price) was saved more than once.
+      Rows are marked <span class="tag tag-dup">DUP</span> below — delete the extras, keep one of each.</div>`;
+  }
+  if (keys.length <= 1 && dupGroups === 0) {
+    v = `<div class="note" style="border-color:var(--ok);background:rgba(82,183,136,.12)">
+      <span class="ok"><strong>No duplicates and a single account.</strong></span><br>
+      If your totals still disagree, the problem is in the calculation rather than the data — send me a screenshot of this page.</div>`;
+  }
+  $('verdict').innerHTML = v;
+}
+
+function renderRecords(records) {
+  const sigs = {};
+  records.forEach(r => { const s = signature(r); sigs[s] = (sigs[s]||0)+1; });
+
+  $('cRecords').textContent = `— ${records.length} document(s)`;
+  let html = '<tr><th></th><th>Date</th><th>kg</th><th>Price</th><th>Rate</th><th>Earnings</th><th>Account</th><th>Doc ID</th><th></th></tr>';
+
+  records.sort((a,b) => String(a.date).localeCompare(String(b.date)));
+
+  for (const r of records) {
+    const isDup = sigs[signature(r)] > 1;
+    html += `<tr>
+      <td>${isDup ? '<span class="tag tag-dup">DUP</span>' : ''}</td>
+      <td>${esc(r.date)}</td>
+      <td>${num(r.tons).toFixed(0)}</td>
+      <td>${num(r.price).toFixed(2)}</td>
+      <td>${num(r.rate).toFixed(2)}</td>
+      <td>${num(r.earnings).toFixed(2)}</td>
+      <td class="mono">${esc(r.createdBy || r.userId)}</td>
+      <td class="mono">${esc(r._id)}</td>
+      <td><button class="btn-danger" data-col="records" data-id="${esc(r._id)}">Delete</button></td>
+    </tr>`;
+  }
+  $('tRecords').innerHTML = html;
+  wireDeletes();
+}
+
+function renderSimple(tableId, countId, rows, col, fields) {
+  $(countId).textContent = `— ${rows.length} document(s)`;
+  let html = '<tr>' + fields.map(f=>`<th>${f}</th>`).join('') + '<th>Account</th><th>Doc ID</th><th></th></tr>';
+  for (const r of rows) {
+    html += '<tr>' + fields.map(f => {
+      const v = r[f];
+      return `<td>${typeof v === 'number' ? num(v).toFixed(2) : esc(v)}</td>`;
+    }).join('') +
+    `<td class="mono">${esc(r.createdBy || r.userId)}</td>
+     <td class="mono">${esc(r._id)}</td>
+     <td><button class="btn-danger" data-col="${col}" data-id="${esc(r._id)}">Delete</button></td></tr>`;
+  }
+  $(tableId).innerHTML = html;
+  wireDeletes();
+}
+
+function wireDeletes() {
+  document.querySelectorAll('button[data-id]').forEach(btn => {
+    if (btn._wired) return;
+    btn._wired = true;
+    btn.onclick = async () => {
+      const col = btn.dataset.col, id = btn.dataset.id;
+      if (!confirm(`Delete this document from "${col}"?\n\nID: ${id}\n\nThis cannot be undone.`)) return;
+      btn.disabled = true; btn.textContent = '…';
+      try {
+        await deleteDoc(doc(db, col, id));
+        loadAll();
+      } catch (e) {
+        alert('Delete failed: ' + e.message);
+        btn.disabled = false; btn.textContent = 'Delete';
+      }
+    };
+  });
+}
+</script>
+</body>
+</html>
